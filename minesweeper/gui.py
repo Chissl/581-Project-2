@@ -90,9 +90,10 @@ class MinesweeperGUI:
 
         # Lock in a slightly larger starting size, then allow free resizing.
         self.root.update_idletasks()
-        width = 420
-        height = 500
-        self.root.geometry(f"{width}x{height}")
+        width = 600
+        height = 700
+        # window width, height, posx, posy
+        self.root.geometry(f"{width}x{height}+0+0")
         self.root.minsize(width // 2, height // 2)
 
     # ------------------------------------------------------------------
@@ -161,10 +162,12 @@ class MinesweeperGUI:
             exportselection=False,
             highlightbackground=PANEL_COLOR,
         )
+        
         for item in BoardSize:
             listbox.insert(tk.END, item.name)
         listbox.activate(list(BoardSize).index(self.board_size))
         listbox.pack(side="top")
+        listbox.selection_set(1) # default to medium size
 
         listbox.bind("<<ListboxSelect>>", self._on_board_size_select)
         self.board_size_listbox = listbox
