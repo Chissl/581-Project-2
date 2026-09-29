@@ -25,6 +25,7 @@ Created:       2026-09-14
 from . import config
 from .board import Board, parse_coordinate
 
+
 def prompt_mine_count() -> int:
     """Ask the player how many mines to use, repeating until the answer is valid.
 
