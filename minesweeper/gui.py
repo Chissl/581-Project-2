@@ -30,6 +30,7 @@ Created:       2026-09-14
 
 import tkinter as tk
 from tkinter import font as tkfont
+import time as time
 
 from . import config
 from .board import Board
@@ -40,7 +41,7 @@ COVERED_COLOR = "#bdbdbd"   # raised, unclicked cell
 REVEALED_COLOR = "#e0e0e0"  # opened cell
 MINE_COLOR = "#ff5252"      # the mine the player stepped on
 PANEL_COLOR = "#d4d4d4"     # window background
-CELL_SIZE = 3               # cell width in text units
+             # cell width in text units
 
 # Each adjacent-mine count gets its own color, as in the original game.
 NUMBER_COLORS = {
@@ -82,14 +83,17 @@ class MinesweeperGUI:
         self.text_font = tkfont.Font(family="Helvetica", size=13)
 
         self._build_control_bar()
-        self._build_grid()
         self._build_status_bar()
+        self._build_grid()
+        
         self.new_game()
+        for slave in root.pack_slaves():
+            print()
 
         # Lock in a slightly larger starting size, then allow free resizing.
         self.root.update_idletasks()
         width = 420
-        height = 480
+        height = 500
         self.root.geometry(f"{width}x{height}")
         self.root.minsize(width // 2, height // 2)
 
@@ -107,9 +111,7 @@ class MinesweeperGUI:
         index = selection[0]
         value = widget.get(index)
         self.board_size = BoardSize[value]
-        print(self.board_size)
 
-    # TODO add bar for board size
     def _build_control_bar(self) -> None:
         """Create the mine-count chooser and the New Game button.
 
@@ -117,14 +119,17 @@ class MinesweeperGUI:
         Outputs: None. Stores the mine-count variable on self.
         """
         # Sourced: Claude AI
-        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8)
+        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8, name="control_bar")
         bar.pack(fill="x")
+
+        self.control_bar = bar
 
         tk.Label(bar, text="Mines:", bg=PANEL_COLOR, font=self.text_font).pack(side="left")
 
         # Spinbox limits the player to the required 10-20 mines, so an invalid
         # count can never reach Board().
-        self.mine_var = tk.StringVar(value=str(self.board.board_size.min_mines))
+        self.mine_var = tk.StringVar(value=str(self.board.board_size.default_mines))
+        # todo let users type in input
         self.mine_spinbox = tk.Spinbox(
             bar,
             from_=self.board.board_size.min_mines,
@@ -160,6 +165,7 @@ class MinesweeperGUI:
         )
         for item in BoardSize:
             listbox.insert(tk.END, item.name)
+        listbox.activate(list(BoardSize).index(self.board_size))
         listbox.pack(side="top")
 
         listbox.bind("<<ListboxSelect>>", self._on_board_size_select)
@@ -179,23 +185,56 @@ class MinesweeperGUI:
             bar, text="Playing", bg=PANEL_COLOR, font=self.text_font, fg="#212121"
         )
         self.status_label.pack(side="right")
+
+    def _build_status_bar(self) -> None:
+        """Create the flags-remaining counter, timer, and help text.
+
+        Inputs:  None.
+        Outputs: None. Stores the status labels on self.
+        """
+        # Sourced: Claude AI
+        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8, name="status_bar")
+        self.status_bar = bar
+        bar.pack(side="bottom", fill=tk.X, expand=True)
+        self.flags_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
+        self.flags_label.pack(side="left")
+
+        self.timer_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
+        self.timer_label.pack(side="right")
         
+        tk.Label(
+            self.root,
+            text="Left-click reveals \u00b7 Right-click flags \u00b7 Double-click a number to clear around it",
+            bg=PANEL_COLOR,
+            fg="#555555",
+            font=tkfont.Font(family="Helvetica", size=10),
+            pady=6,
+        ).pack(fill=tk.BOTH, expand=True, side="bottom", before=self.status_bar)
+        
+   # TODO optimize generating larger sizes
     def _build_grid(self) -> None:
         """Create the A-J / 1-10 labels and the clickable cell widgets.
-
+        
         Inputs:  None (board size comes from config).
         Outputs: None. Fills self.cells with a grid of tk.Label widgets.
         """
+        # destroy grid before rebuilding
+        if hasattr(self, "grid_frame") and self.grid_frame is not None:
+            self.grid_frame.destroy()
         # Sourced: Claude AI
-        frame = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=4)
-        frame.pack(fill="both", expand=True)
 
+        frame = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=4, name="grid_frame")
+        # place after status bar but before other widgets
+        frame.pack(fill="both", expand=True)
+        self.grid_frame = frame
+        start = time.time()
+        print(f"Creating board: {start}")
         # Let each board column/row grow evenly when the window is resized.
         for c in range(self.board_size.cols + 1):
             frame.columnconfigure(c, weight=1 if c else 0)
         for r in range(self.board_size.rows + 1):
             frame.rowconfigure(r, weight=1 if r else 0)
-
+        
         # Column letters across the top; row 0 of the layout grid.
         for c in range(self.board_size.cols):
             tk.Label(
@@ -203,12 +242,13 @@ class MinesweeperGUI:
                 text=config.COL_LABELS[c],
                 bg=PANEL_COLOR,
                 font=self.text_font,
-                width=CELL_SIZE,
+                width=self.board_size.cell_size,
             ).grid(row=0, column=c + 1, sticky="nsew")
 
         # One Label per cell. Labels (rather than Buttons) are used because
         # their background color renders the same on every platform.
         self.cells = []
+        
         for r in range(self.board_size.rows):
             tk.Label(
                 frame,
@@ -223,7 +263,7 @@ class MinesweeperGUI:
             for c in range(self.board_size.cols):
                 label = tk.Label(
                     frame,
-                    width=CELL_SIZE,
+                    width=self.board_size.cell_size,
                     font=self.cell_font,
                     bg=COVERED_COLOR,
                     relief="raised",
@@ -241,49 +281,22 @@ class MinesweeperGUI:
                     label.bind(sequence, lambda _e, r=r, c=c: self.on_right_click(r, c))
                 row_widgets.append(label)
             self.cells.append(row_widgets)
-
-    def _build_status_bar(self) -> None:
-        """Create the flags-remaining counter, timer, and help text.
-
-        Inputs:  None.
-        Outputs: None. Stores the status labels on self.
-        """
-        # Sourced: Claude AI
-        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8)
-        bar.pack(fill="x")
-
-        self.flags_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
-        self.flags_label.pack(side="left")
-
-        self.timer_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
-        self.timer_label.pack(side="right")
-
-        tk.Label(
-            self.root,
-            text="Left-click reveals \u00b7 Right-click flags \u00b7 Double-click a number to clear around it",
-            bg=PANEL_COLOR,
-            fg="#555555",
-            font=tkfont.Font(family="Helvetica", size=10),
-            pady=6,
-        ).pack()
-
+        end = time.time()
+        print(f"Finished creating board: {end}")
+        print(f"Time to create: {end-start}")
     # ------------------------------------------------------------------
     # Game flow
     # ------------------------------------------------------------------
-    def create_board(self) -> BoardSize:
-        if int(self.mine_var.get()) < self.board_size.min_mines:
-            self.mine_var = tk.StringVar(value=str(self.board_size.min_mines))
-        elif int(self.mine_var.get()) > self.board_size.max_mines:
-            self.mine_var = tk.StringVar(value=str(self.board_size.max_mines))
-        self.update_mine_spinbox()
-        return Board(self.board_size, int(self.mine_var.get()))
-
     def update_mine_spinbox(self):
         min_mines = self.board_size.min_mines
         max_mines = self.board_size.max_mines
         self.mine_spinbox.config(from_=min_mines, to=max_mines)
-        self.mine_var.set(str(min_mines))
 
+    def create_board(self) -> BoardSize:
+        if not self.board_size.min_mines < int(self.mine_var.get()) < self.board_size.max_mines:
+            self.mine_var.set(self.board_size.default_mines)
+        self.update_mine_spinbox()
+        return Board(self.board_size, int(self.mine_var.get()))
 
     def new_game(self) -> None:
         """Throw away the current board and start a fresh game.

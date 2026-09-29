@@ -95,7 +95,7 @@ class Board:
         Raises:  ValueError if mine_count is outside the allowed range.
         """
         # Sourced: Claude AI
-        # Enforce the required 10-20 mine range.
+        # Enforce min/max range.
         if mine_count is None:
             mine_count = board_size.min_mines
 
