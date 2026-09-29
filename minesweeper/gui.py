@@ -128,7 +128,6 @@ class MinesweeperGUI:
         # Spinbox limits the player to the required 10-20 mines, so an invalid
         # count can never reach Board().
         self.mine_var = tk.StringVar(value=str(self.board.board_size.default_mines))
-        # todo let users type in input
         self.mine_spinbox = tk.Spinbox(
             bar,
             from_=self.board.board_size.min_mines,

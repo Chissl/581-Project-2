@@ -25,7 +25,6 @@ Author:        Caleb Hite
 Created:       2026-09-14
 ================================================================================
 """
-# TODO add presets with different size/mine counts
 # --- Board configuration (Sourced: Claude AI, from project requirements) ---
 #ROWS = 10               # number of rows, labeled 1-10 when displayed
 #COLS = 10               # number of columns, labeled A-J when displayed
