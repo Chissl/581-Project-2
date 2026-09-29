@@ -30,7 +30,6 @@ Created:       2026-09-14
 
 import tkinter as tk
 from tkinter import font as tkfont
-import time as time
 
 from . import config
 from .board import Board
@@ -41,7 +40,7 @@ COVERED_COLOR = "#bdbdbd"   # raised, unclicked cell
 REVEALED_COLOR = "#e0e0e0"  # opened cell
 MINE_COLOR = "#ff5252"      # the mine the player stepped on
 PANEL_COLOR = "#d4d4d4"     # window background
-             # cell width in text units
+CELL_SIZE = 3            # cell width in text units
 
 # Each adjacent-mine count gets its own color, as in the original game.
 NUMBER_COLORS = {
