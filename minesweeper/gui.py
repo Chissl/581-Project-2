@@ -87,8 +87,6 @@ class MinesweeperGUI:
         self._build_grid()
         
         self.new_game()
-        for slave in root.pack_slaves():
-            print()
 
         # Lock in a slightly larger starting size, then allow free resizing.
         self.root.update_idletasks()
@@ -227,8 +225,6 @@ class MinesweeperGUI:
         # place after status bar but before other widgets
         frame.pack(fill="both", expand=True)
         self.grid_frame = frame
-        start = time.time()
-        print(f"Creating board: {start}")
         # Let each board column/row grow evenly when the window is resized.
         for c in range(self.board_size.cols + 1):
             frame.columnconfigure(c, weight=1 if c else 0)
@@ -281,9 +277,6 @@ class MinesweeperGUI:
                     label.bind(sequence, lambda _e, r=r, c=c: self.on_right_click(r, c))
                 row_widgets.append(label)
             self.cells.append(row_widgets)
-        end = time.time()
-        print(f"Finished creating board: {end}")
-        print(f"Time to create: {end-start}")
     # ------------------------------------------------------------------
     # Game flow
     # ------------------------------------------------------------------
