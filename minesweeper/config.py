@@ -25,15 +25,14 @@ Author:        Caleb Hite
 Created:       2026-09-14
 ================================================================================
 """
-
 # --- Board configuration (Sourced: Claude AI, from project requirements) ---
-ROWS = 10               # number of rows, labeled 1-10 when displayed
-COLS = 10               # number of columns, labeled A-J when displayed
-COL_LABELS = "ABCDEFGHIJ"  # index 0 -> 'A', index 9 -> 'J'
+#ROWS = 10               # number of rows, labeled 1-10 when displayed
+#COLS = 10               # number of columns, labeled A-J when displayed
+COL_LABELS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  # index 0 -> 'A', index 9 -> 'J'
 
 # --- Mine configuration (Sourced: Claude AI, from project requirements) ---
-MIN_MINES = 10          # fewest mines a player may request
-MAX_MINES = 20          # most mines a player may request
+#MIN_MINES = 10          # fewest mines a player may request
+#MAX_MINES = 20          # most mines a player may request
 
 # --- First-click safety (Sourced: Claude AI) ---
 # When True, the first revealed cell AND its neighbors are guaranteed mine-free.
