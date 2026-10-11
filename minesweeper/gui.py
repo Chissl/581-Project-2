@@ -23,8 +23,7 @@ External Sources:
                The number colors follow the classic Minesweeper palette.
                Reviewed by the author.
 
-Author:        Will Calhoun
-Created:       2026-09-14
+
 ================================================================================
 """
 
@@ -33,14 +32,14 @@ from tkinter import font as tkfont
 
 from . import config
 from .board import Board
-from .boardsize import BoardSize
+from . import ai
 
 # --- Appearance constants (Sourced: Claude AI, classic Minesweeper look) ---
 COVERED_COLOR = "#bdbdbd"   # raised, unclicked cell
 REVEALED_COLOR = "#e0e0e0"  # opened cell
 MINE_COLOR = "#ff5252"      # the mine the player stepped on
 PANEL_COLOR = "#d4d4d4"     # window background
-CELL_SIZE = 3            # cell width in text units
+CELL_SIZE = 3               # cell width in text units
 
 # Each adjacent-mine count gets its own color, as in the original game.
 NUMBER_COLORS = {
@@ -69,11 +68,19 @@ class MinesweeperGUI:
         self.root.title("Minesweeper")
         self.root.configure(bg=PANEL_COLOR)
         self.root.resizable(True, True)
-
+ 
         # Game state that is rebuilt by new_game().
-        self.board_size = BoardSize.MEDIUM
-        self.board = Board(self.board_size)
+        self.board = Board(config.MIN_MINES)
         self.game_over = False
+        #2
+        self.ai_var = tk.BooleanVar(value=True)
+        self.mode_var = tk.StringVar(value="easy")
+        self.ai_enabled = False
+        self.ai_mode = "easy"
+        self.player_turn = True
+        self.ai_job = None
+
+        #
         self.seconds = 0
         self.timer_job = None  # id of the pending after() callback, if any
 
@@ -82,33 +89,74 @@ class MinesweeperGUI:
         self.text_font = tkfont.Font(family="Helvetica", size=13)
 
         self._build_control_bar()
-        self._build_status_bar()
         self._build_grid()
-        
+        self._build_status_bar()
         self.new_game()
 
         # Lock in a slightly larger starting size, then allow free resizing.
         self.root.update_idletasks()
-        width = 600
-        height = 700
-        # window width, height, posx, posy
-        self.root.geometry(f"{width}x{height}+0+0")
+        width = 420
+        height = 480
+        self.root.geometry(f"{width}x{height}")
         self.root.minsize(width // 2, height // 2)
+        
+    #2
+    def toggleAI(self) -> None:
+        self.ai_enabled = self.ai_var.get()
+        self.new_game()
+
+    def aiTurn(self):
+        #self.ai_job = None
+        if self.game_over or not self.ai_enabled:
+            return
+        #if self.game_over or not self.ai_enabled or self.player_turn: #or 2self.ai_enabled is False
+            #return
+
+        move = ai.chooseMove(self.board, self.ai_mode)
+        #if self.ai_mode == "easy":
+            #move = ai.easyAI(self.board) #***maybe change for later (move = ai.choose_move(self.mode, self.ai_mode))
+
+        if move is None:
+            self.finish(won= self.board.is_cleared())
+            return
+
+
+        #ai.doMove(self.board, move)
+        if self.board.reveal(move.row, move.col) if move.action == "open" else False:
+            self.finish(won=False)
+            return
+        '''
+        if self.board.reveal(move.row, move.col):
+                if move.action == "open": #else False:
+                    self.finish(won= False)
+                    return
+        ''' 
+        
+        if move.action == "flag":
+            self.board.toggle_flag(move.row, move.col)
+
+        if self.board.is_cleared():
+            self.finish(won= True)
+            return
+
+        self.refresh()
+        self.player_turn = True
+
+    #probably remove
+    def cancelAIJob(self):
+            if self.ai_job is not None:
+                self.root.after_cancel(self.ai_job)
+                self.ai_job = None
+    #probably remove
+    def scheduleAITurn(self, delay_ms: int=400) -> None:
+        self.cancelAIJob()
+        self.player_turn = False
+        self.ai_job = self.root.after(delay_ms, self.aiTurn)
+
 
     # ------------------------------------------------------------------
     # Widget construction
     # ------------------------------------------------------------------
-    '''
-    Event handler for boardsize listbox selection
-    '''
-    def _on_board_size_select(self, event):
-        widget = event.widget
-        selection = widget.curselection()
-        if not selection:
-            return
-        index = selection[0]
-        value = widget.get(index)
-        self.board_size = BoardSize[value]
 
     def _build_control_bar(self) -> None:
         """Create the mine-count chooser and the New Game button.
@@ -117,58 +165,40 @@ class MinesweeperGUI:
         Outputs: None. Stores the mine-count variable on self.
         """
         # Sourced: Claude AI
-        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8, name="control_bar")
+        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8)
         bar.pack(fill="x")
-
-        self.control_bar = bar
 
         tk.Label(bar, text="Mines:", bg=PANEL_COLOR, font=self.text_font).pack(side="left")
 
         # Spinbox limits the player to the required 10-20 mines, so an invalid
         # count can never reach Board().
-        self.mine_var = tk.StringVar(value=str(self.board.board_size.default_mines))
-        self.mine_spinbox = tk.Spinbox(
+        self.mine_var = tk.StringVar(value=str(config.MIN_MINES))
+        tk.Spinbox(
             bar,
-            from_=self.board.board_size.min_mines,
-            to=self.board.board_size.max_mines,
+            from_=config.MIN_MINES,
+            to=config.MAX_MINES,
             width=4,
             justify="center",
             state="readonly",
             textvariable=self.mine_var,
             font=self.text_font,
             highlightbackground=PANEL_COLOR,
-        )
-        self.mine_spinbox.pack(side="left", padx=(6, 12))
+        ).pack(side="left", padx=(6, 12))
 
-        # Board size selector and label
-        # Sizes are Small, Medium and Large
-        # Formatting generated by Claude
-        size_frame = tk.Frame(bar, bg=PANEL_COLOR)
-        size_frame.pack(side="left", padx=(0, 10))
+        #2
+        self.ai_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(
+            bar, 
+            text="AI opponent", 
+            variable=self.ai_var, 
+            bg=PANEL_COLOR, 
+            font=self.text_font, 
+            command=self.toggleAI, 
+            highlightbackground=PANEL_COLOR #2,
+        ).pack(side="left", padx=(12, 4))
 
-        tk.Label(
-            size_frame,
-            text="Board Size",
-            bg=PANEL_COLOR,
-        ).pack(side="top")
-
-        listbox = tk.Listbox(
-            size_frame,
-            width=8,
-            height=len(BoardSize),
-            justify="center",
-            exportselection=False,
-            highlightbackground=PANEL_COLOR,
-        )
-        
-        for item in BoardSize:
-            listbox.insert(tk.END, item.name)
-        listbox.activate(list(BoardSize).index(self.board_size))
-        listbox.pack(side="top")
-        listbox.selection_set(1) # default to medium size
-
-        listbox.bind("<<ListboxSelect>>", self._on_board_size_select)
-        self.board_size_listbox = listbox
+        self.mode_var = tk.StringVar(value="easy") #self.ai_mode=
+        tk.OptionMenu(bar, self.mode_var, "easy", "medium", "hard").pack(side="left")
 
         # Match the panel so controls don't sit on default system chrome colors.
         tk.Button(
@@ -185,68 +215,36 @@ class MinesweeperGUI:
         )
         self.status_label.pack(side="right")
 
-    def _build_status_bar(self) -> None:
-        """Create the flags-remaining counter, timer, and help text.
-
-        Inputs:  None.
-        Outputs: None. Stores the status labels on self.
-        """
-        # Sourced: Claude AI
-        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8, name="status_bar")
-        self.status_bar = bar
-        bar.pack(side="bottom", fill=tk.X, expand=True)
-        self.flags_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
-        self.flags_label.pack(side="left")
-
-        self.timer_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
-        self.timer_label.pack(side="right")
-        
-        tk.Label(
-            self.root,
-            text="Left-click reveals \u00b7 Right-click flags \u00b7 Double-click a number to clear around it",
-            bg=PANEL_COLOR,
-            fg="#555555",
-            font=tkfont.Font(family="Helvetica", size=10),
-            pady=6,
-        ).pack(fill=tk.BOTH, expand=True, side="bottom", before=self.status_bar)
-        
-   # TODO optimize generating larger sizes
     def _build_grid(self) -> None:
         """Create the A-J / 1-10 labels and the clickable cell widgets.
-        
+
         Inputs:  None (board size comes from config).
         Outputs: None. Fills self.cells with a grid of tk.Label widgets.
         """
-        # destroy grid before rebuilding
-        if hasattr(self, "grid_frame") and self.grid_frame is not None:
-            self.grid_frame.destroy()
         # Sourced: Claude AI
-
-        frame = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=4, name="grid_frame")
-        # place after status bar but before other widgets
+        frame = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=4)
         frame.pack(fill="both", expand=True)
-        self.grid_frame = frame
+
         # Let each board column/row grow evenly when the window is resized.
-        for c in range(self.board_size.cols + 1):
+        for c in range(config.COLS + 1):
             frame.columnconfigure(c, weight=1 if c else 0)
-        for r in range(self.board_size.rows + 1):
+        for r in range(config.ROWS + 1):
             frame.rowconfigure(r, weight=1 if r else 0)
-        
+
         # Column letters across the top; row 0 of the layout grid.
-        for c in range(self.board_size.cols):
+        for c in range(config.COLS):
             tk.Label(
                 frame,
                 text=config.COL_LABELS[c],
                 bg=PANEL_COLOR,
                 font=self.text_font,
-                width=self.board_size.cell_size,
+                width=CELL_SIZE,
             ).grid(row=0, column=c + 1, sticky="nsew")
 
         # One Label per cell. Labels (rather than Buttons) are used because
         # their background color renders the same on every platform.
         self.cells = []
-        
-        for r in range(self.board_size.rows):
+        for r in range(config.ROWS):
             tk.Label(
                 frame,
                 text=str(r + 1),
@@ -257,10 +255,10 @@ class MinesweeperGUI:
             ).grid(row=r + 1, column=0, padx=(0, 4), sticky="nsew")
 
             row_widgets = []
-            for c in range(self.board_size.cols):
+            for c in range(config.COLS):
                 label = tk.Label(
                     frame,
-                    width=self.board_size.cell_size,
+                    width=CELL_SIZE,
                     font=self.cell_font,
                     bg=COVERED_COLOR,
                     relief="raised",
@@ -278,19 +276,35 @@ class MinesweeperGUI:
                     label.bind(sequence, lambda _e, r=r, c=c: self.on_right_click(r, c))
                 row_widgets.append(label)
             self.cells.append(row_widgets)
+
+    def _build_status_bar(self) -> None:
+        """Create the flags-remaining counter, timer, and help text.
+
+        Inputs:  None.
+        Outputs: None. Stores the status labels on self.
+        """
+        # Sourced: Claude AI
+        bar = tk.Frame(self.root, bg=PANEL_COLOR, padx=10, pady=8)
+        bar.pack(fill="x")
+
+        self.flags_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
+        self.flags_label.pack(side="left")
+
+        self.timer_label = tk.Label(bar, bg=PANEL_COLOR, font=self.text_font)
+        self.timer_label.pack(side="right")
+
+        tk.Label(
+            self.root,
+            text="Left-click reveals \u00b7 Right-click flags \u00b7 Double-click a number to clear around it",
+            bg=PANEL_COLOR,
+            fg="#555555",
+            font=tkfont.Font(family="Helvetica", size=10),
+            pady=6,
+        ).pack()
+
     # ------------------------------------------------------------------
     # Game flow
     # ------------------------------------------------------------------
-    def update_mine_spinbox(self):
-        min_mines = self.board_size.min_mines
-        max_mines = self.board_size.max_mines
-        self.mine_spinbox.config(from_=min_mines, to=max_mines)
-
-    def create_board(self) -> BoardSize:
-        if not self.board_size.min_mines < int(self.mine_var.get()) < self.board_size.max_mines:
-            self.mine_var.set(self.board_size.default_mines)
-        self.update_mine_spinbox()
-        return Board(self.board_size, int(self.mine_var.get()))
 
     def new_game(self) -> None:
         """Throw away the current board and start a fresh game.
@@ -304,17 +318,22 @@ class MinesweeperGUI:
             self.root.after_cancel(self.timer_job)
             self.timer_job = None
 
-        redraw_grid = self.board.board_size != self.board_size
-        self.board = self.create_board() 
+        self.board = Board(int(self.mine_var.get()))
         self.game_over = False
         self.seconds = 0
         self.status_label.config(text="Playing", fg="#212121")
         self.timer_label.config(text="Time: 0")
-        if (redraw_grid):
-            self._build_grid()
-            self.refresh()
-        else:
-            self.refresh()
+
+        #2
+        #self.ai_mode = self.mode_var.get() #if hasattr; is basically setting default
+        #self.ai_enabled = self.ai_var
+        #self.player_turn = True
+        self.ai_mode = self.mode_var.get() if hasattr(self, "mode_var") else "easy"
+        self.ai_enabled = getattr(self, "ai_var", tk.BooleanVar(value=False)).get()
+        self.player_turn = True
+        #2
+
+        self.refresh()
 
     def _tick(self) -> None:
         """Advance the on-screen clock by one second and schedule the next tick.
@@ -376,7 +395,10 @@ class MinesweeperGUI:
         # Sourced: Claude AI
         if self.game_over:
             return
-
+        #2
+        if self.ai_enabled and not self.player_turn:
+            return
+        
         if self.board.reveal(row, col):
             self.finish(won=False)
             return
@@ -389,6 +411,11 @@ class MinesweeperGUI:
             return
         self.refresh()
 
+        #2
+        if self.ai_enabled:
+            self.player_turn = False
+            self.root.after(400, self.aiTurn)
+
     def on_right_click(self, row: int, col: int) -> None:
         """Place or remove a flag on the clicked cell.
 
@@ -397,6 +424,9 @@ class MinesweeperGUI:
         """
         # Sourced: Claude AI
         if self.game_over:
+            return
+        #2
+        if self.ai_enabled and not self.player_turn:
             return
         self.board.toggle_flag(row, col)
         self.refresh()
@@ -412,6 +442,11 @@ class MinesweeperGUI:
         # Sourced: Claude AI
         if self.game_over:
             return
+
+        #2
+        if self.ai_enabled and not self.player_turn:
+            return
+        
         cell = self.board.grid[row][col]
         if not cell.is_revealed or cell.adjacent_mines == 0:
             return
@@ -447,8 +482,8 @@ class MinesweeperGUI:
         Outputs: None. Also updates the flags-remaining counter.
         """
         # Sourced: Claude AI
-        for r in range(self.board_size.rows):
-            for c in range(self.board_size.cols):
+        for r in range(config.ROWS):
+            for c in range(config.COLS):
                 self._draw_cell(r, c, show_mines)
         # Required display: remaining mine count = total mines minus flags placed.
         self.flags_label.config(text=f"Mines remaining: {self.board.flags_remaining()}")
