@@ -55,10 +55,12 @@ Created:       2026-10-10 ***Created earlier, but moved to this new file.
 from .board import Board
 from typing import NamedTuple, Optional
 
-class Move(NamedTuple):
-    action: str
-    row: int
-    col: int
+#Holds the AI's chosen action and coordinate. Passes through
+class Move:
+    def __init__(self, action, row, col):
+        self.action = action
+        self.row = row
+        self.col = col
 
 def hiddenNeighbors(board: Board, row: int, col:int):
     return [
