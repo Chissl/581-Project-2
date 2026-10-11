@@ -80,7 +80,18 @@ def hardAI(board: Board) ->Optional[Move]:
             if coveredCell.is_revealed is False and coveredCell.is_flagged is False:
                 candidates.append((r, c)) #"yield" source: deepseek; maybe replace with return
     
-    
+    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
+    for dr, dc in directions:
+        for r in range(board.rows):
+            for c in range(board.cols):
+                mr, mc = r + dr, c + dc
+                er, ec = r + 2 * dr, c + 2 * dc
+                if not (board.in_bounds(mr, mc) and board.in_bounds(er, ec)):
+                    continue
+
+                # if first cell isn't 1 or middle cell isn't 2 or end cell isn't 1 continue
+                if revealedNumber(board, r, c) != 1 or revealedNumber(board, mr, mc) != 2 or revealedNumber(board, er, ec) != 1:
+                    continue
 
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
     mode = mode.lower()
