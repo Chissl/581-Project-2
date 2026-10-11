@@ -24,6 +24,15 @@ def flaggedNeighbors(board: Board, row: int, col: int):
         if board.grid[nr][nc].is_flagged
     ]
 
+def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
+    if not board.in_bounds(row, col):
+        return None
+    cell = board.grid[row][col]
+
+    if cell.is_revealed and not cell.is_mine and cell.adjacent_mines > 0:
+        return cell.adjacent_mines
+    return None
+
 def easyAI(board: Board) -> Optional[Move]:
     candidates = []
     for r in range(board.rows):
@@ -62,6 +71,16 @@ def mediumAI(board: Board) ->Optional[Move]:
                 return Move("open", nr, nc)
 
     return easyAI(board) #fallback (random open)
+
+def hardAI(board: Board) ->Optional[Move]:
+    candidates = []
+    for r in range(board.rows):
+        for c in range(board.cols):
+            coveredCell = board.grid[r][c]
+            if coveredCell.is_revealed is False and coveredCell.is_flagged is False:
+                candidates.append((r, c)) #"yield" source: deepseek; maybe replace with return
+    
+    
 
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
     mode = mode.lower()
