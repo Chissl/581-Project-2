@@ -23,8 +23,7 @@ External Sources:
                The number colors follow the classic Minesweeper palette.
                Reviewed by the author.
 
-Author:        Will Calhoun
-Created:       2026-09-14
+
 ================================================================================
 """
 
@@ -33,6 +32,7 @@ from tkinter import font as tkfont
 
 from . import config
 from .board import Board
+from . import ai
 
 # --- Appearance constants (Sourced: Claude AI, classic Minesweeper look) ---
 COVERED_COLOR = "#bdbdbd"   # raised, unclicked cell
@@ -68,10 +68,18 @@ class MinesweeperGUI:
         self.root.title("Minesweeper")
         self.root.configure(bg=PANEL_COLOR)
         self.root.resizable(True, True)
-
+ 
         # Game state that is rebuilt by new_game().
         self.board = Board(config.MIN_MINES)
         self.game_over = False
+        #2
+        self.ai_var = tk.BooleanVar(value=True)
+        self.mode_var = tk.StringVar(value="easy")
+        self.ai_enabled = False
+        self.ai_mode = "easy"
+        self.player_turn = True
+        self.ai_job = None
+        #
         self.seconds = 0
         self.timer_job = None  # id of the pending after() callback, if any
 
@@ -90,6 +98,58 @@ class MinesweeperGUI:
         height = 480
         self.root.geometry(f"{width}x{height}")
         self.root.minsize(width // 2, height // 2)
+        
+
+    def toggleAI(self) -> None:
+        self.ai_enabled = self.ai_var.get()
+        self.new_game()
+
+    def aiTurn(self):
+        #self.ai_job = None
+        if self.game_over or not self.ai_enabled:
+            return
+        #if self.game_over or not self.ai_enabled or self.player_turn: #or 2self.ai_enabled is False
+            #return
+
+        move = ai.chooseMove(self.board, self.ai_mode)
+        #if self.ai_mode == "easy":
+            #move = ai.easyAI(self.board) #***maybe change for later (move = ai.choose_move(self.mode, self.ai_mode))
+
+        if move is None:
+            self.finish(won= self.board.is_cleared())
+            return
+
+
+        #ai.doMove(self.board, move)
+        if self.board.reveal(move.row, move.col) if move.action == "open" else False:
+            self.finish(won=False)
+            return
+        '''
+        if self.board.reveal(move.row, move.col):
+                if move.action == "open": #else False:
+                    self.finish(won= False)
+                    return
+        ''' 
+        
+        if move.action == "flag":
+            self.board.toggle_flag(move.row, move.col)
+
+        if self.board.is_cleared():
+            self.finish(won= True)
+            return
+
+        self.refresh()
+        self.player_turn = True
+
+    def cancelAIJob(self):
+            if self.ai_job is not None:
+                self.root.after_cancel(self.ai_job)
+                self.ai_job = None
+
+    def scheduleAITurn(self, delay_ms: int=400) -> None:
+        self.cancelAIJob()
+        self.player_turn = False
+        self.ai_job = self.root.after(delay_ms, self.aiTurn)
 
     # ------------------------------------------------------------------
     # Widget construction
@@ -121,6 +181,21 @@ class MinesweeperGUI:
             font=self.text_font,
             highlightbackground=PANEL_COLOR,
         ).pack(side="left", padx=(6, 12))
+
+        #2
+        self.ai_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(
+            bar, 
+            text="AI opponent", 
+            variable=self.ai_var, 
+            bg=PANEL_COLOR, 
+            font=self.text_font, 
+            command=self.toggleAI, 
+            highlightbackground=PANEL_COLOR #2,
+        ).pack(side="left", padx=(12, 4))
+
+        self.mode_var = tk.StringVar(value="easy") #self.ai_mode=
+        tk.OptionMenu(bar, self.mode_var, "easy", "medium").pack(side="left")
 
         # Match the panel so controls don't sit on default system chrome colors.
         tk.Button(
@@ -245,6 +320,16 @@ class MinesweeperGUI:
         self.seconds = 0
         self.status_label.config(text="Playing", fg="#212121")
         self.timer_label.config(text="Time: 0")
+
+        #2
+        #self.ai_mode = self.mode_var.get() #if hasattr; is basically setting default
+        #self.ai_enabled = self.ai_var
+        #self.player_turn = True
+        self.ai_mode = self.mode_var.get() if hasattr(self, "mode_var") else "easy"
+        self.ai_enabled = getattr(self, "ai_var", tk.BooleanVar(value=False)).get()
+        self.player_turn = True
+        #2
+
         self.refresh()
 
     def _tick(self) -> None:
@@ -307,7 +392,10 @@ class MinesweeperGUI:
         # Sourced: Claude AI
         if self.game_over:
             return
-
+        #2
+        if self.ai_enabled and not self.player_turn:
+            return
+        
         if self.board.reveal(row, col):
             self.finish(won=False)
             return
@@ -320,6 +408,11 @@ class MinesweeperGUI:
             return
         self.refresh()
 
+        #2
+        if self.ai_enabled:
+            self.player_turn = False
+            self.root.after(400, self.aiTurn)
+
     def on_right_click(self, row: int, col: int) -> None:
         """Place or remove a flag on the clicked cell.
 
@@ -328,6 +421,9 @@ class MinesweeperGUI:
         """
         # Sourced: Claude AI
         if self.game_over:
+            return
+        #2
+        if self.ai_enabled and not self.player_turn:
             return
         self.board.toggle_flag(row, col)
         self.refresh()
@@ -343,6 +439,11 @@ class MinesweeperGUI:
         # Sourced: Claude AI
         if self.game_over:
             return
+
+        #2
+        if self.ai_enabled and not self.player_turn:
+            return
+        
         cell = self.board.grid[row][col]
         if not cell.is_revealed or cell.adjacent_mines == 0:
             return
