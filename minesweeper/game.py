@@ -60,7 +60,7 @@ def play() -> None:
     if aiInteractive == "Y" or aiInteractive == "y":
         ai_enabled = True
         aiMode = input("Choose A Mode (easy, medium, or hard): ")
-        if aiMode != "easy" or aiMode != "medium":
+        if aiMode != "easy" or aiMode != "medium" or aiMode != "hard":
             print("Entered Invalid Mode. Playing Easy")
             aiMode = "easy"
     
