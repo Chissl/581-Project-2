@@ -195,7 +195,7 @@ class MinesweeperGUI:
         ).pack(side="left", padx=(12, 4))
 
         self.mode_var = tk.StringVar(value="easy") #self.ai_mode=
-        tk.OptionMenu(bar, self.mode_var, "easy", "medium").pack(side="left")
+        tk.OptionMenu(bar, self.mode_var, "easy", "medium", "hard").pack(side="left")
 
         # Match the panel so controls don't sit on default system chrome colors.
         tk.Button(
