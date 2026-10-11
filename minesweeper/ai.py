@@ -60,6 +60,13 @@ class Move:
         self.row = row #stores row
         self.col = col #stores column
 
+'''
+Get list of uncovered and unflagged(hidden) neighbors for mediumAI.
+Inputs: board(Board)- the board object being played on.
+        row(int)- row of coordinate
+        col(int)- column of coordinate
+Outputs: List of uncovered and unflagged neighbor coordinates
+'''
 def hiddenNeighbors(board: Board, row: int, col:int):
     return [
         (nr, nc)
