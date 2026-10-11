@@ -93,6 +93,39 @@ def hardAI(board: Board) ->Optional[Move]:
                 if revealedNumber(board, r, c) != 1 or revealedNumber(board, mr, mc) != 2 or revealedNumber(board, er, ec) != 1:
                     continue
 
+                outer_a = (r - dr, c - dc)
+                outer_b = (er + dr, ec + dc)
+                middleN = (mr - dc * 0, mc + 0) #place holder for hidden middle neighbor
+
+                perpendicular_dr, perpendicular_dc = -dc, dr #coordinate(dr,dc) is shifted 90 degrees
+
+                for sign in (1, -1):
+                    mid_r = mr + sign * perpendicular_dr
+                    mid_c = mc + sign * perpendicular_dc
+
+                    #if any cell generated is not in bounds, continue
+                    if not (board.in_bounds(mid_r, mid_c) and board.in_bounds(*outer_a) and board.in_bounds(*outer_b)):
+                        continue
+
+                    #if cell is revealed or flagged, continue
+                    if board.grid[mid_r][mid_c].is_revealed is True or board.grid[mid_r][mid_c].is_flagged is True:
+                        continue
+
+                    #checks that outer_a is hidden and unflagged so that actions can be taken on it
+                    a_ok = (not board.grid[outer_a[0]][outer_a[1]].is_revealed and not board.grid[outer_a[0]][outer_a[1]].is_flagged)
+                    #checks that outer_b is hidden and unflagged so that actions can be taken on it
+                    b_ok = (not board.grid[outer_b[0]][outer_b[1]].is_revealed and not board.grid[outer_b[0]][outer_b[1]].is_flagged)
+                    if not (a_ok and b_ok):
+                        continue
+
+                    if not board.grid[outer_a[0]][outer_a[1]].is_flagged:
+                        return Move("flag", outer_a[0], outer_a[1])
+                    if not board.grid[outer_b[0]][outer_b[1]].is_flagged:
+                        return Move("flag", outer_b[0], outer_b[1])
+                    return Move("open", mid_r, mid_c)
+
+                    
+
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
     mode = mode.lower()
     if mode == "easy":
