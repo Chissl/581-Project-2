@@ -74,7 +74,7 @@ class MinesweeperGUI:
         self.board_size = BoardSize.MEDIUM
         self.board = Board(self.board_size)
         self.game_over = False
-        #2
+        #Sourced: DeepSeek AI
         self.ai_var = tk.BooleanVar(value=True)
         self.mode_var = tk.StringVar(value="easy")
         self.ai_enabled = False
@@ -105,17 +105,21 @@ class MinesweeperGUI:
         self.root.geometry(f"{width}x{height}+0+0")
         self.root.minsize(width // 2, height // 2)
         
-    #2
+    
+    """Toggle the AI on or off
+    
+        Inputs:  None
+        Outputs: None
+    """
     def toggleAI(self) -> None:
-        self.ai_enabled = self.ai_var.get()
-        self.new_game()
+        #Sourced: DeepSeek AI
+        self.ai_enabled = self.ai_var.get() #Set ai_enabled to value in ai_var
+        self.new_game() #Reset game when toggle the AI on/off
 
     def aiTurn(self):
         #self.ai_job = None
         if self.game_over or not self.ai_enabled:
             return
-        #if self.game_over or not self.ai_enabled or self.player_turn: #or 2self.ai_enabled is False
-            #return
 
         move = ai.chooseMove(self.board, self.ai_mode)
         #if self.ai_mode == "easy":
