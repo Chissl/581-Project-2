@@ -147,7 +147,6 @@ def doMove(board: Board, move: Optional[Move]) -> bool:
         board.toggle_flag(move.row, move.col)
         return False
     
-    
     if move.action == "open":
         return board.reveal(move.row, move.col)
     raise ValueError(f"Unknown move action: {move.action!r}")
