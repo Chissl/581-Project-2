@@ -57,11 +57,14 @@ def play() -> None:
     board = Board(BoardSize.SMALL, prompt_mine_count())
 
     #2
+    # Default to a solo game so answering "N" still leaves these defined.
+    ai_enabled = False
+    aiMode = "easy"
     aiInteractive = input("Enable AI Interactive Mode? (Y or N): ")
     if aiInteractive == "Y" or aiInteractive == "y":
         ai_enabled = True
-        aiMode = input("Choose A Mode (easy, medium, or hard): ")
-        if aiMode != "easy" or aiMode != "medium" or aiMode != "hard":
+        aiMode = input("Choose A Mode (easy, medium, or hard): ").strip().lower()
+        if aiMode not in ("easy", "medium", "hard"):
             print("Entered Invalid Mode. Playing Easy")
             aiMode = "easy"
     
@@ -91,7 +94,7 @@ def play() -> None:
                 return
             label = f"{move.action} {chr(ord('A') + move.col)}{move.row + 1}"
             hit = ai.doMove(board, move)
-            print(f"AI chose{label}.")
+            print(f"AI chose {label}.")
             if hit:
                 print()
                 print(board.render(show_mines=True))

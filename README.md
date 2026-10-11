@@ -15,6 +15,7 @@ Requires Python 3.9+ (developed and tested on 3.11). No third-party packages.
 ```bash
 python main.py            # graphical window (default)
 python main.py --text     # terminal version
+python main.py --aiAS --hard   # watch the AI solve a game by itself (--easy / --medium / --hard)
 ```
 
 If Tkinter is missing from your Python installation, `main.py` explains how to install it
@@ -38,6 +39,10 @@ python -m unittest discover -s tests -t .
 | Right-click (or Ctrl-click on macOS) | Place / remove a flag |
 | Double-click a number | "Chord" — open all unflagged neighbors once the flag count matches the number |
 | **Mines** spinner | Choose 10–20 mines (enforced by the control, so an invalid count can never be entered) |
+| **Board Size** list | Small (10x10), Medium (15x15) or Large (25x25); takes effect on **New Game** |
+| **AI opponent** checkbox | Turn the AI on or off (starts a new game) |
+| AI mode menu | Pick **easy**, **medium** or **hard**; takes effect on **New Game** |
+| **Auto-solve** | The AI plays the current board by itself in the chosen mode; press **Stop** (or **New Game**) to take over again |
 | **New Game** | Start a fresh board |
 
 The window shows **Mines remaining** (total mines minus flags placed), an elapsed timer, and
@@ -54,6 +59,38 @@ coordinates and malformed commands print an explanation and re-prompt instead of
 
 Board symbols: `#` covered · `F` flagged · `.` uncovered with zero adjacent mines ·
 `1`–`8` adjacent mine count · `*` mine (shown at game over).
+
+---
+
+## AI solver
+
+The AI lives in `minesweeper/ai.py`. It plays on the same board as the player and can run in
+two ways:
+
+- **Interactive mode**: you and the AI take turns on the same board.
+  - In the window, tick **AI opponent** and pick a mode. After each cell you uncover, the AI
+    makes one move about half a second later. Clicks are ignored while it is the AI's turn.
+  - In the terminal (`python main.py --text`), answer `Y` to "Enable AI Interactive Mode?" and
+    type a mode. The AI's move is printed after each of yours (e.g. `AI chose flag F1.`).
+- **Auto-solve mode**: the AI plays the whole game with no player.
+  - In the window, pick a mode and press **Auto-solve**. It works on any board size and mine
+    count, makes a move every fraction of a second so you can watch, and ends on a win or a
+    mine. The button turns into **Stop**; you can stop it and finish the game yourself. Your
+    clicks are ignored while it runs.
+  - From the command line, `python main.py --aiAS --easy|--medium|--hard` plays a 10x10,
+    10-mine game, prints the board after every AI move, then prints `AI won!` or `AI lost.`
+
+Each move is either *open* a cell or *flag* a cell. If the AI opens a mine, the game is lost;
+if it uncovers the last safe cell, the game is won.
+
+| Mode | How it picks a move |
+| --- | --- |
+| **Easy** | Opens a random cell that is still covered and not flagged. |
+| **Medium** | Looks at every uncovered number and applies two rules. **Rule 1:** if the number equals its covered neighbors (flagged ones included), all of them are mines, so flag one. **Rule 2:** if the number equals its flagged neighbors, the rest are safe, so open one. If neither rule applies, it falls back to a random open like Easy. |
+| **Hard** | Tries Medium's two rules first. If neither applies, it looks for three uncovered cells in a row reading **1-2-1**: it flags the two outer covered cells beside the row and opens the covered cell beside the middle. If there is no such pattern, it falls back to a random open. |
+
+Easy is pure guessing and almost always loses. Medium and Hard win most 10x10 games and
+roughly a third of games on the larger boards, where more random guesses are needed.
 
 ---
 
@@ -85,7 +122,9 @@ Board symbols: `#` covered · `F` flagged · `.` uncovered with zero adjacent mi
 main.py                     Entry point; picks the GUI or terminal front end
 minesweeper/
   __init__.py               Package marker
-  config.py                 Board size, column labels, mine limits, first-click rule
+  config.py                 Column labels and the first-click rule
+  boardsize.py              Small / Medium / Large board sizes and their mine limits
+  ai.py                     AI solver: Easy, Medium and Hard move choice, auto-solve mode
   cell.py                   Cell dataclass (one square's state + display symbol)
   board.py                  Board Manager + Game Logic: grid, mines, reveal, flags, win check
   game.py                   Terminal front end (UI + input handler)

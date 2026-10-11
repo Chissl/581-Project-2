@@ -81,6 +81,7 @@ class MinesweeperGUI:
         self.ai_mode = "easy"
         self.player_turn = True
         self.ai_job = None
+        self.auto_solving = False  # True while the Auto-solve button is playing
 
         #
         self.seconds = 0
@@ -98,7 +99,7 @@ class MinesweeperGUI:
 
         # Lock in a slightly larger starting size, then allow free resizing.
         self.root.update_idletasks()
-        width = 600
+        width = 760  # fits the whole control bar, even with "Game Over: Loss" showing
         height = 700
         # window width, height, posx, posy
         self.root.geometry(f"{width}x{height}+0+0")
@@ -146,16 +147,76 @@ class MinesweeperGUI:
         self.refresh()
         self.player_turn = True
 
-    #probably remove
+    # Cancel any AI move waiting on a timer (opponent turn or auto-solve step).
     def cancelAIJob(self):
             if self.ai_job is not None:
                 self.root.after_cancel(self.ai_job)
                 self.ai_job = None
-    #probably remove
+    # Give the AI opponent its turn after a short pause so the player sees it.
     def scheduleAITurn(self, delay_ms: int=400) -> None:
         self.cancelAIJob()
         self.player_turn = False
         self.ai_job = self.root.after(delay_ms, self.aiTurn)
+
+    def toggleAutoSolve(self) -> None:
+        """Start or stop the AI solving the current board by itself.
+
+        Inputs:  None (uses the mode picked in the AI mode menu).
+        Outputs: None. Schedules autoSolveStep until the game ends or the
+                 player presses Stop / New Game.
+        """
+        # Sourced: Combined (team AI functions in ai.py, wiring by Claude AI)
+        if self.auto_solving:
+            self.stopAutoSolve()
+            return
+        if self.game_over:
+            # The board is finished, so solve a fresh one instead.
+            self.new_game()
+        self.ai_mode = self.mode_var.get()
+        self.auto_solving = True
+        self.auto_button.config(text="Stop")
+        self.autoSolveStep()
+
+    def stopAutoSolve(self) -> None:
+        """Stop auto-solving and give control back to the player."""
+        # Sourced: Claude AI
+        self.cancelAIJob()
+        self.auto_solving = False
+        self.player_turn = True
+        self.auto_button.config(text="Auto-solve")
+
+    def autoSolveStep(self) -> None:
+        """Make one AI move, redraw, then schedule the next move.
+
+        Inputs:  None.
+        Outputs: None. Ends the game on a win or a mine.
+        """
+        # Sourced: Combined (team AI functions in ai.py, wiring by Claude AI)
+        self.ai_job = None
+        if self.game_over or not self.auto_solving:
+            return
+
+        move = ai.chooseMove(self.board, self.ai_mode)
+        if move is None:
+            self.finish(won=self.board.is_cleared())
+            return
+
+        hit = ai.doMove(self.board, move)
+        # The first open places the mines, so the clock starts then, as for a player.
+        if self.board.mines_placed:
+            self._start_timer_if_needed()
+        if hit:
+            self.finish(won=False)
+            return
+        if self.board.is_cleared():
+            self.finish(won=True)
+            return
+
+        self.refresh()
+        # Pause between moves so they can be watched: 200 ms on the 10x10
+        # board, shorter on bigger boards so they don't take minutes.
+        delay_ms = max(60, 2000 // self.board.cols)
+        self.ai_job = self.root.after(delay_ms, self.autoSolveStep)
 
 
     # ------------------------------------------------------------------
@@ -247,6 +308,17 @@ class MinesweeperGUI:
 
         self.mode_var = tk.StringVar(value="easy") #self.ai_mode=
         tk.OptionMenu(bar, self.mode_var, "easy", "medium", "hard").pack(side="left")
+
+        # Let the AI play the whole board by itself in the chosen mode.
+        self.auto_button = tk.Button(
+            bar,
+            text="Auto-solve",
+            width=9,
+            font=self.text_font,
+            command=self.toggleAutoSolve,
+            highlightbackground=PANEL_COLOR,
+        )
+        self.auto_button.pack(side="left", padx=(4, 12))
 
         # Match the panel so controls don't sit on default system chrome colors.
         tk.Button(
@@ -381,6 +453,10 @@ class MinesweeperGUI:
         if self.timer_job is not None:
             self.root.after_cancel(self.timer_job)
             self.timer_job = None
+        # Same for a pending AI move, so it can't land on the new board.
+        if self.auto_solving:
+            self.stopAutoSolve()
+        self.cancelAIJob()
 
         redraw_grid = self.board.board_size != self.board_size
         self.board = self.create_board() 
@@ -435,6 +511,8 @@ class MinesweeperGUI:
         """
         # Sourced: Claude AI
         self.game_over = True
+        if self.auto_solving:
+            self.stopAutoSolve()
         if self.timer_job is not None:
             self.root.after_cancel(self.timer_job)
             self.timer_job = None
@@ -465,7 +543,7 @@ class MinesweeperGUI:
         if self.game_over:
             return
         #2
-        if self.ai_enabled and not self.player_turn:
+        if self.auto_solving or (self.ai_enabled and not self.player_turn):
             return
         
         if self.board.reveal(row, col):
@@ -482,8 +560,7 @@ class MinesweeperGUI:
 
         #2
         if self.ai_enabled:
-            self.player_turn = False
-            self.root.after(400, self.aiTurn)
+            self.scheduleAITurn()
 
     def on_right_click(self, row: int, col: int) -> None:
         """Place or remove a flag on the clicked cell.
@@ -495,7 +572,7 @@ class MinesweeperGUI:
         if self.game_over:
             return
         #2
-        if self.ai_enabled and not self.player_turn:
+        if self.auto_solving or (self.ai_enabled and not self.player_turn):
             return
         self.board.toggle_flag(row, col)
         self.refresh()
@@ -513,7 +590,7 @@ class MinesweeperGUI:
             return
 
         #2
-        if self.ai_enabled and not self.player_turn:
+        if self.auto_solving or (self.ai_enabled and not self.player_turn):
             return
         
         cell = self.board.grid[row][col]
