@@ -293,15 +293,28 @@ def chooseMove(board: Board, mode: str) -> Optional[Move]:
     #raise a ValueError when mode argument isn't one of the above 
     raise ValueError(f"Unknown AI mode: {mode!r}")
 
+'''
+Program computer to solve minesweeper game by uncovering cells at random.
+
+Inputs: board(Board)- the board object being played on.
+        move(Move)- "open"/"flag" and coordinates; Can also be None
+Outputs: Boolean Value- whether revealed cell
+'''
 def doMove(board: Board, move: Optional[Move]) -> bool:
+    #Sourced: DeepSeek
+    #If Move was None return False; no cell revealed
     if move is None:
         return False
+
+    #if Move was "flag", flag the Move's coordinate
     if move.action == "flag":
         board.toggle_flag(move.row, move.col)
-        return False
-    
+        return False #no cell revealed
+
+    #If Move was "open", call board.reveal() to uncover Move's coordinate; Will return True
     if move.action == "open":
         return board.reveal(move.row, move.col)
+    #Raise Value Error if the move's action was not "open" or "flag"
     raise ValueError(f"Unknown move action: {move.action!r}")
 
 def autoSolve(mineCount: int, mode: str, verbose: bool = True, boardSize: BoardSize = BoardSize.SMALL) -> bool:
