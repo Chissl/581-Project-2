@@ -44,8 +44,8 @@ External Sources:
                assistance of DeepSeek(High-Flyer, model DeepSeek-V4.1-Flash).
                Reviewed by the author.
 
-Author:        Didier Carrillo
-Created:       2026-10-10 ***Created earlier, but moved to this new file.
+Author:        Didier Carrillo ***
+Created:       2026-10-10 ***
 ================================================================================
 """
 
