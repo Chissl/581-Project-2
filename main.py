@@ -37,6 +37,8 @@ def main() -> None:
             mode = "easy"
         if "--medium" in sys.argv[1:]:
             mode = "medium"
+        if "--hard" in sys.argv[1:]:
+            mode = "hard"
         won = autoSolve(mineCount = 10, mode=mode, verbose=True)
         print("AI won!" if won else "AI lost.")
         return
