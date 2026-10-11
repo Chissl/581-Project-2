@@ -298,7 +298,7 @@ Program computer to solve minesweeper game by uncovering cells at random.
 
 Inputs: board(Board)- the board object being played on.
         move(Move)- "open"/"flag" and coordinates; Can also be None
-Outputs: Boolean Value- whether revealed cell
+Outputs: Boolean Value- whether revealed cell was a mine
 '''
 def doMove(board: Board, move: Optional[Move]) -> bool:
     #Sourced: DeepSeek
@@ -311,27 +311,40 @@ def doMove(board: Board, move: Optional[Move]) -> bool:
         board.toggle_flag(move.row, move.col)
         return False #no cell revealed
 
-    #If Move was "open", call board.reveal() to uncover Move's coordinate; Will return True
+    #If Move was "open", call board.reveal() to uncover Move's coordinate;
     if move.action == "open":
-        return board.reveal(move.row, move.col)
+        return board.reveal(move.row, move.col) #True if hit a mine
     #Raise Value Error if the move's action was not "open" or "flag"
     raise ValueError(f"Unknown move action: {move.action!r}")
 
+'''
+The computer solves the minesweeper by itself.
+
+Inputs: mineCount(int)- Number of mines
+        mode(str)- AI mode ("easy"/"medium"/"hard")
+        verbose(bool)- Default to True; Render the board for each action the AI takes
+        boardSize: BoardSize; Defaulted to SMALL board
+
+Outputs: Boolean
+         Prints board renders
+'''
 def autoSolve(mineCount: int, mode: str, verbose: bool = True, boardSize: BoardSize = BoardSize.SMALL) -> bool:
-    board = Board(boardSize, mineCount)
+    board = Board(boardSize, mineCount) #Set up board
 
-    first = easyAI(board)
-    board.reveal(first.row, first.col)
+    first = easyAI(board) #Perform easyAI move so that it picks a random cell to uncover
+    board.reveal(first.row, first.col) #Reveal the randomly chosen cell
 
+    #Sourced: DeepSeek AI
+    #While the board isn't cleared, the AI performs a move and renders the updated board
     while not board.is_cleared():
         move = chooseMove(board, mode)
-        if move is None:
+        if move is None: #If move is None, break out of while loop
             break
-        hit = doMove(board, move)
-        if verbose:
+        hit = doMove(board, move) #Move is not None, call doMove
+        if verbose: #Default True, so render updated board
             print(board.render(show_mines=hit))
             print()
-        if hit:
+        if hit: #If doMove returned True, hit a mine and AI lost
             return False
 
-    return board.is_cleared()
+    return board.is_cleared() #Never hit a mine, and ran out of other valid options so AI won
