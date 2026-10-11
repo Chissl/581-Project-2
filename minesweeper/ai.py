@@ -76,7 +76,7 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
 
 def hardAI(board: Board) ->Optional[Move]:
     
-    move = mediumAI(isHardAI=True)
+    move = mediumAI(board, isHardAI=True)
     if move is not None: #if AI found move using mediumAI, just use that
         return move
     #if move is None, mediumAI didn't find valid move so use 1-2-1 rule
