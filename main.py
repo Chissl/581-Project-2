@@ -20,7 +20,7 @@ External Sources:
 """
 
 import sys
-
+from minesweeper.ai import autoSolve
 
 def main() -> None:
     """Start the graphical game, or the terminal game if --text is given.
@@ -31,7 +31,6 @@ def main() -> None:
     # Sourced: Claude AI
     # Text mode is opt-in; the clickable window is the default experience.
     if "--aiAS" in sys.argv[1:]:
-        from minesweeper.ai import autoSolve
         mode = "easy"
         if "--easy" in sys.argv[1:]:
             mode = "easy"

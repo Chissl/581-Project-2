@@ -75,7 +75,6 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
     return easyAI(board) #fallback (random open)
 
 def hardAI(board: Board) ->Optional[Move]:
-    
     move = mediumAI(board, isHardAI=True)
     if move is not None: #if AI found move using mediumAI, just use that
         return move
