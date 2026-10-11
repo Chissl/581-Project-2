@@ -1,7 +1,58 @@
-import random
-from . import config
-from .board import Board, parse_coordinate
+"""
+================================================================================
+Module:        minesweeper.ai
+Description:   Implements the easy, medium, and hard AI modes additions and 
+               helper functions that choose and apply the computer's chosen moves.
+               The default run is interactive mode, where human and computer 
+               alternate turns, but players can toggle the auto-solving AI on 
+               by running the text version. The same board as the player is used
+               for the computer and it can also flag or reveal uncovered cells.
 
+               The easy AI uncovered and unflagged cells at random.
+
+               The medium AI first checks if the amount of hidden neighbors of an
+               equals uncovered cell equals the number on that cell and flags the
+               them if true. Second, if the amount of flagged neighbors equals an
+               uncovered cell's number, the AI opens all other hidden neighbors.
+
+               The hard AI uses the medium AI's logic but adds the 1-2-1 pattern
+               rule. This is when three reveals cells in a row/col show 1-2-1 then
+               it flags the two outer hidden neighbors since it deduces them as
+               mines. It then opens the middle hidden neighbor. When neither hard
+               nor medium AI logic applies, pick a random cell to open.
+
+
+Functions:     hiddenNeighbors(board, row, col)   ->[(row, col)]
+               flaggedNeighbors(board, row, col)  -> [(row, col)]
+               revealedNumber(board, row, col)    -> Optional[int]
+               easyAI(board)                      -> Optional[Move]
+               mediumAI(board, isHardAI)          -> Optional[Move]
+               hardAI(board)                      -> Optional[Move]
+               chooseMove(board, mode)            -> Optional[Move]
+               doMove(board, move)                -> bool
+               autoSolve(mineCount, mode, verbose)-> bool
+Classes:       Move(Named Tuple)
+                 action: str
+                 row:    int
+                 col:    int
+
+Inputs:        Board, Mine count, Mode(easy/medium/hard), Move(open/flag)
+Outputs:       Repective AI mode's move
+
+External Sources:
+               Generated with the assistance of Claude (Anthropic, model
+               Claude Opus 5) via Claude Code. Also Generated with the 
+               assistance of DeepSeek(High-Flyer, model DeepSeek-V4.1-Flash).
+               Uses Python's standard-library typing module
+               (https://docs.python.org/3/library/typing.html).
+               Reviewed by the author.
+
+Author:        Didier Carrillo
+Created:       2026-10-10 ***Created earlier, but moved to this new file.
+================================================================================
+"""
+
+from .board import Board
 from typing import NamedTuple, Optional
 
 class Move(NamedTuple):
