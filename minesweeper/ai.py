@@ -68,11 +68,11 @@ Inputs: board(Board)- the board object being played on.
 Outputs: List of uncovered and unflagged neighbor coordinates
 '''
 def hiddenNeighbors(board: Board, row: int, col:int):
+    #return list of (neighbor_row, neighbor_col) when cell (nr, nc) is not revealed and not flagged
     return [
-        (nr, nc)
+        (nr, nc) 
         for nr, nc in board.neighbors(row, col)
-        if not board.grid[nr][nc].is_revealed
-        and not board.grid[nr][nc].is_flagged
+        if not board.grid[nr][nc].is_revealed and not board.grid[nr][nc].is_flagged
     ]
 
 def flaggedNeighbors(board: Board, row: int, col: int):
