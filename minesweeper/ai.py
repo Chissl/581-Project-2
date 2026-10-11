@@ -49,19 +49,19 @@ def mediumAI(board: Board) ->Optional[Move]:
                 nr, nc = hidden[0]
                 return Move("flag", nr, nc)
 
-            #rule 2
-            for r in range(board.rows):
-                for c in range(board.cols):
-                    cell = board.grid[r][c]
-                    if not cell.is_revealed or cell.adjacent_mines == 0:
-                        continue
-                    flagged = flaggedNeighbors(board, r, c)
-                    hidden = hiddenNeighbors(board, r, c)
-                    if hidden and len(flagged) == cell.adjacent_mines:
-                        nr, nc = hidden[0]
-                        return Move("open", nr, nc)
+    #rule 2
+    for r in range(board.rows):
+        for c in range(board.cols):
+            cell = board.grid[r][c]
+            if not cell.is_revealed or cell.adjacent_mines == 0:
+                continue
+            flagged = flaggedNeighbors(board, r, c)
+            hidden = hiddenNeighbors(board, r, c)
+            if hidden and len(flagged) == cell.adjacent_mines:
+                nr, nc = hidden[0]
+                return Move("open", nr, nc)
 
-            return easyAI(board) #fallback (random open)
+    return easyAI(board) #fallback (random open)
 
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
     mode = mode.lower()
