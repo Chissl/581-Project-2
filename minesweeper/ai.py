@@ -123,7 +123,8 @@ def hardAI(board: Board) ->Optional[Move]:
                     if not board.grid[outer_b[0]][outer_b[1]].is_flagged:
                         return Move("flag", outer_b[0], outer_b[1])
                     return Move("open", mid_r, mid_c)
-    return None
+                
+    return easyAI(board)
 
                     
 
