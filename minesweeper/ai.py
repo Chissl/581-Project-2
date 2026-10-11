@@ -109,18 +109,27 @@ def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
         return cell.adjacent_mines
     return None #Return None if any condition above failed
 
+'''
+Program computer to solve minesweeper game by uncovering cells at random.
+Inputs: board(Board)- the board object being played on.
+Outputs: AI's Move("open" and randomly selected cell); None if cannot find fitting cell
+'''
 def easyAI(board: Board) -> Optional[Move]:
-    candidates = []
+    candidates = [] #list to hold valid cells, will later pick at random from these
+    #Going through board, checks each cell for if it's covered or flagged
     for r in range(board.rows):
         for c in range(board.cols):
             coveredCell = board.grid[r][c]
+            #if the cell is not revealed and is unflagged, append it to candidates list
             if coveredCell.is_revealed is False and coveredCell.is_flagged is False:
-                candidates.append((r, c)) #"yield" source: deepseek; maybe replace with return
+                candidates.append((r, c))
 
+    #If could not find valid candidates, return False
     if not candidates:
         return None
+    #Otherwise set row and col to a random coordinate from candidates list(using board's random.Random() instance)
     row, col = board.rng.choice(candidates)
-    return Move("open", row, col)
+    return Move("open", row, col) #Return Move(always "open") with the picked coordinates
 
 def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
     for r in range(board.rows):
