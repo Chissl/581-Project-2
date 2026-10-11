@@ -272,15 +272,25 @@ def hardAI(board: Board) ->Optional[Move]:
     #no rule applies, so fall back to a random open
     return easyAI(board)
 
+'''
+Program computer to solve minesweeper game by uncovering cells at random.
 
+Inputs: board(Board)- the board object being played on.
+        mode(str)- "easy", "medium", or "hard"
+Outputs: Move of chosen AI mode
+'''
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
-    mode = mode.lower()
+    mode = mode.lower() #Make mode text lowercase,so ValueError isn't raised for capitalization
+    #Call corresponding AI mode depending on which mode argument was passed through
     if mode == "easy":
         return easyAI(board)
     if mode == "medium":
         return mediumAI(board)
     if mode == "hard":
         return hardAI(board)
+    
+    #Sourced: DeepSeek AI
+    #raise a ValueError when mode argument isn't one of the above 
     raise ValueError(f"Unknown AI mode: {mode!r}")
 
 def doMove(board: Board, move: Optional[Move]) -> bool:
