@@ -24,7 +24,8 @@ Created:       2026-09-14
 
 from . import config
 from .board import Board, parse_coordinate
-
+from sklearn import tree
+from . import ai
 
 def prompt_mine_count() -> int:
     """Ask the player how many mines to use, repeating until the answer is valid.
@@ -47,10 +48,27 @@ def play() -> None:
     Inputs:  Keyboard commands from the player (see module prologue).
     Outputs: None. Prints the board each turn and a final win/loss message.
     """
+    
+
+
     # Sourced: Claude AI
     # --- Setup: create a covered, unflagged board (mines placed on first reveal) ---
     board = Board(prompt_mine_count())
+
+    #2
+    aiInteractive = input("Enable AI Interactive Mode? (Y or N): ")
+    if aiInteractive == "Y" or aiInteractive == "y":
+        ai_enabled = True
+        aiMode = input("Choose A Mode (easy, medium, or hard): ")
+        if aiMode != "easy" or aiMode != "medium":
+            print("Entered Invalid Mode. Playing Easy")
+            aiMode = "easy"
+    
+    playerTurn = True
+
     print("Commands: 'r A1' to reveal, 'f A1' to flag/unflag, 'q' to quit.")
+    if ai_enabled:
+       print(f"AI opponent enabled in {aiMode} mode.")
 
     # --- Main game loop: draw, read command, update ---
     while True:
@@ -59,7 +77,34 @@ def play() -> None:
         # Status indicator and remaining mine count, both required by the
         # project specification. Inside this loop the game is always "Playing";
         # the win and loss branches below print the final status.
+        #2 status = "Playing" if not board.is_cleared() else "Victory"
         print(f"Status: Playing   Mines remaining: {board.flags_remaining()}")
+
+
+        #2
+        if ai_enabled and not playerTurn:
+            move = ai.chooseMove(board, aiMode)
+            if move is None:
+                print("AI has no moves left.")
+                print("Status: Victory- you cleared every safe cell")
+                return
+            label = f"{move.action} {chr(ord('A') + move.col)}{move.row + 1}"
+            hit = ai.doMove(board, move)
+            print(f"AI chose{label}.")
+            if hit:
+                print()
+                print(board.render(show_mines=True))
+                print("Status: Game Over: Loss - AI uncovered a mine.")
+                return
+            if board.is_cleared():
+                print()
+                print(board.render(show_mines=True))
+                print("Status: Victory - AI cleared every safe cell!")
+                return
+            playerTurn = True
+            continue
+
+        
 
         # Split input into [command, coordinate]; ignore blank lines.
         parts = input("> ").strip().split()
@@ -70,7 +115,7 @@ def play() -> None:
         if parts[0].lower() == "q":
             print("Goodbye!")
             return
-
+ 
         # Anything other than 'r <cell>' or 'f <cell>' is a usage error.
         if len(parts) != 2 or parts[0].lower() not in ("r", "f"):
             print("Usage: r <cell> | f <cell> | q")
@@ -99,3 +144,7 @@ def play() -> None:
             print(board.render(show_mines=True))
             print("Status: Victory - you cleared every safe cell!")
             return
+
+        #2
+        if aiInteractive:
+            playerTurn = False
