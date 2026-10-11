@@ -46,7 +46,7 @@ def easyAI(board: Board) -> Optional[Move]:
     row, col = board.rng.choice(candidates)
     return Move("open", row, col)
 
-def mediumAI(board: Board) ->Optional[Move]:
+def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
     for r in range(board.rows):
         for c in range(board.cols):
             cell = board.grid[r][c]
@@ -70,15 +70,16 @@ def mediumAI(board: Board) ->Optional[Move]:
                 nr, nc = hidden[0]
                 return Move("open", nr, nc)
 
+    if isHardAI is True:
+        return None
     return easyAI(board) #fallback (random open)
 
 def hardAI(board: Board) ->Optional[Move]:
-    candidates = []
-    for r in range(board.rows):
-        for c in range(board.cols):
-            coveredCell = board.grid[r][c]
-            if coveredCell.is_revealed is False and coveredCell.is_flagged is False:
-                candidates.append((r, c)) #"yield" source: deepseek; maybe replace with return
+    
+    move = mediumAI(isHardAI=True)
+    if move is not None: #if AI found move using mediumAI, just use that
+        return move
+    #if move is None, mediumAI didn't find valid move so use 1-2-1 rule
     
     directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
     for dr, dc in directions:
@@ -123,7 +124,8 @@ def hardAI(board: Board) ->Optional[Move]:
                     if not board.grid[outer_b[0]][outer_b[1]].is_flagged:
                         return Move("flag", outer_b[0], outer_b[1])
                     return Move("open", mid_r, mid_c)
-                
+
+    
     return easyAI(board)
 
                     
@@ -134,6 +136,8 @@ def chooseMove(board: Board, mode: str) -> Optional[Move]:
         return easyAI(board)
     if mode == "medium":
         return mediumAI(board)
+    if mode == "hard":
+        return hardAI(board)
     raise ValueError(f"Unknown AI mode: {mode!r}")
 
 def doMove(board: Board, move: Optional[Move]) -> bool:
