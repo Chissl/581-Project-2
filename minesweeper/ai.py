@@ -62,6 +62,7 @@ class Move:
 
 '''
 Get list of uncovered and unflagged(hidden) neighbors for mediumAI.
+
 Inputs: board(Board)- the board object being played on.
         row(int)- row of coordinate
         col(int)- column of coordinate
@@ -77,6 +78,7 @@ def hiddenNeighbors(board: Board, row: int, col:int):
 
 '''
 Get list of flagged neighbors for mediumAI.
+
 Inputs: board(Board)- the board object being played on.
         row(int)- row of coordinate
         col(int)- column of coordinate
@@ -92,6 +94,7 @@ def flaggedNeighbors(board: Board, row: int, col: int):
 
 '''
 Get list of flagged neighbors for mediumAI.
+
 Inputs: board(Board)- the board object being played on.
         row(int)- row of coordinate
         col(int)- column of coordinate
@@ -113,6 +116,7 @@ def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
 
 '''
 Program computer to solve minesweeper game by uncovering cells at random.
+
 Inputs: board(Board)- the board object being played on.
 Outputs: AI's Move("open" and randomly selected cell); None if cannot find fitting cell
 '''
@@ -182,6 +186,7 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
         return None #Return None if mediumAI was called by hardAI(to not call easyAI)
     return easyAI(board) #fallback (random open)
 
+
 def oneTwoOneMove(board: Board) -> Optional[Move]:
     """Find a 1-2-1 pattern and return the move it proves is right.
 
@@ -247,7 +252,15 @@ def _onlyCoveredOnSide(board: Board, line, sr: int, sc: int) -> bool:
                 return False
     return True
 
+'''
+Program computer to solve minesweeper game by performing 1-2-1 rule when mediumAI rules do not apply.
+    When three uncovered cells are side-by-side in the pattern of 1-2-1, flag the two outer
+    hidden neighbors as they are probably mines. Then, open the inner hidden neighbor.
 
+Inputs: board(Board)- the board object being played on.
+Outputs: AI's Move("open"/"flag" and selected cell)
+         Call easyAI() when the neither of the mediumAI() rules nor the 1-2-1 rule applies
+'''
 def hardAI(board: Board) ->Optional[Move]:
     move = mediumAI(board, isHardAI=True)
     if move is not None: #if AI found move using mediumAI, just use that
