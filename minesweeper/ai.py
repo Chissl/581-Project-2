@@ -26,16 +26,13 @@ Functions:     hiddenNeighbors(board, row, col)   ->[(row, col)]
                flaggedNeighbors(board, row, col)  -> [(row, col)]
                revealedNumber(board, row, col)    -> Optional[int]
                easyAI(board)                      -> Optional[Move]
-               mediumAI(board, isHardAI)          -> Optional[Move]
+               mediumAI(board, isHardAI=False)          -> Optional[Move]
                hardAI(board)                      -> Optional[Move]
                chooseMove(board, mode)            -> Optional[Move]
                doMove(board, move)                -> bool
                autoSolve(mineCount, mode, verbose)-> bool
 Classes:       Move(Named Tuple)
-                 action: str
-                 row:    int
-                 col:    int
-
+                 __init__(action, row, col)
 Inputs:        Board, Mine count, Mode(easy/medium/hard), Move(open/flag)
 Outputs:       Repective AI mode's move
 
@@ -43,8 +40,6 @@ External Sources:
                Generated with the assistance of Claude (Anthropic, model
                Claude Opus 5) via Claude Code. Also Generated with the 
                assistance of DeepSeek(High-Flyer, model DeepSeek-V4.1-Flash).
-               Uses Python's standard-library typing module
-               (https://docs.python.org/3/library/typing.html).
                Reviewed by the author.
 
 Author:        Didier Carrillo
@@ -53,7 +48,7 @@ Created:       2026-10-10 ***Created earlier, but moved to this new file.
 """
 
 from .board import Board
-from typing import NamedTuple, Optional
+from typing import Optional
 
 #Holds the AI's chosen action and coordinate. Passes through
 class Move:
