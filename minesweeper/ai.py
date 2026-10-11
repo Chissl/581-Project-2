@@ -75,21 +75,39 @@ def hiddenNeighbors(board: Board, row: int, col:int):
         if not board.grid[nr][nc].is_revealed and not board.grid[nr][nc].is_flagged
     ]
 
+'''
+Get list of flagged neighbors for mediumAI.
+Inputs: board(Board)- the board object being played on.
+        row(int)- row of coordinate
+        col(int)- column of coordinate
+Outputs: List of flagged neighbor coordinates
+'''
 def flaggedNeighbors(board: Board, row: int, col: int):
+    #return list of (neighbor_row, neighbor_col) when cell (nr, nc) is flagged
     return[
         (nr, nc)
         for nr, nc in board.neighbors(row, col)
         if board.grid[nr][nc].is_flagged
     ]
 
+'''
+Get list of flagged neighbors for mediumAI.
+Inputs: board(Board)- the board object being played on.
+        row(int)- row of coordinate
+        col(int)- column of coordinate
+Outputs: Number of adjacent mines
+Sourced: DeepSeek AI
+'''
 def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
+    #if coordinate provided is not in the board, return None, otherwise save it in variable cell
     if not board.in_bounds(row, col):
         return None
-    cell = board.grid[row][col]
+    cell = board.grid[row][col] 
 
+    #if the cell is uncovered, not a mine, and has any adjacent mines return the number of adjacent mines
     if cell.is_revealed and not cell.is_mine and cell.adjacent_mines > 0:
         return cell.adjacent_mines
-    return None
+    return None #Return None if any condition above failed
 
 def easyAI(board: Board) -> Optional[Move]:
     candidates = []
