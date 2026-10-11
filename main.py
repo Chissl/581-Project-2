@@ -28,20 +28,29 @@ def main() -> None:
     Inputs:  Command-line arguments from sys.argv.
     Outputs: None. Runs until the player quits or closes the window.
     """
+    #Sourced: DeepSeek AI
+    #Text mode; Add --aiAS flag to turn on the Auto Solver
+    if "--aiAS" in sys.argv[1:]:
+        mode = "easy" #default to easy mode
+        mineAmount = 10 #default to 10 mines
+        if "--easy" in sys.argv[1:]: #if add "--easy" flag set mode to easy
+            mode = "easy"
+        if "--medium" in sys.argv[1:]: #if add "--medium" flag set mode to medium
+            mode = "medium"
+        if "--hard" in sys.argv[1:]: #if add "--hard" flag set mode to hard
+            mode = "hard"
+        if "--mines=15" in sys.argv[1:]:
+            mineAmount = 15
+        if "--mines=20" in sys.argv[1:]:
+            mineAmount = 20
+
+        won = autoSolve(mineCount = mineAmount, mode=mode, verbose=True) #run autoSolve
+        #If won returns True, print victory message else print loss message
+        print("AI won!" if won else "AI lost.") 
+        return #Exit out of main
+    
     # Sourced: Claude AI
     # Text mode is opt-in; the clickable window is the default experience.
-    if "--aiAS" in sys.argv[1:]:
-        mode = "easy"
-        if "--easy" in sys.argv[1:]:
-            mode = "easy"
-        if "--medium" in sys.argv[1:]:
-            mode = "medium"
-        if "--hard" in sys.argv[1:]:
-            mode = "hard"
-        won = autoSolve(mineCount = 10, mode=mode, verbose=True)
-        print("AI won!" if won else "AI lost.")
-        return
-
     if any(arg in ("--text", "-t") for arg in sys.argv[1:]):
         from minesweeper.game import play
 
