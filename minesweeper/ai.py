@@ -51,12 +51,12 @@ from .board import Board
 from .boardsize import BoardSize
 from typing import Optional
 
-#Holds the AI's chosen action and coordinate. Passes through
+#Holds the AI's chosen action and coordinate.
 class Move:
-    def __init__(self, action, row, col):
-        self.action = action
-        self.row = row
-        self.col = col
+    def __init__(self, action, row, col): #class constructor for Move
+        self.action = action #stores action (which should be "open" or "flag" or None)
+        self.row = row #stores row
+        self.col = col #stores column
 
 def hiddenNeighbors(board: Board, row: int, col:int):
     return [
