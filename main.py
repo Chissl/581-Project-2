@@ -16,8 +16,6 @@ External Sources:
                Generated with the assistance of Claude (Anthropic, model
                Claude Opus 5) via Claude Code. Reviewed by the author.
 
-Author:        Caleb Hite
-Created:       2026-09-14
 ================================================================================
 """
 
@@ -32,6 +30,17 @@ def main() -> None:
     """
     # Sourced: Claude AI
     # Text mode is opt-in; the clickable window is the default experience.
+    if "--aiAS" in sys.argv[1:]:
+        from minesweeper.ai import autoSolve
+        mode = "easy"
+        if "--easy" in sys.argv[1:]:
+            mode = "easy"
+        if "--medium" in sys.argv[1:]:
+            mode = "medium"
+        won = autoSolve(mineCount = 10, mode=mode, verbose=True)
+        print("AI won!" if won else "AI lost.")
+        return
+
     if any(arg in ("--text", "-t") for arg in sys.argv[1:]):
         from minesweeper.game import play
 
@@ -48,7 +57,6 @@ def main() -> None:
               "'sudo apt install python3-tk') or run 'python main.py --text'.")
         print("Falling back to the terminal version.\n")
         from minesweeper.game import play
-
         play()
         return
 
