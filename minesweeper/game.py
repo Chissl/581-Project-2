@@ -60,7 +60,10 @@ def play() -> None:
     # Default to a solo game so answering "N" still leaves these defined.
     ai_enabled = False
     aiMode = "easy"
+    #***This seems bit redundant, might change
+    #Ask the user if they want to enable interactive mode
     aiInteractive = input("Enable AI Interactive Mode? (Y or N): ")
+    #if yes, set set ai_enabled to True and ask to choose a mode
     if aiInteractive == "Y" or aiInteractive == "y":
         ai_enabled = True
         aiMode = input("Choose A Mode (easy, medium, or hard): ").strip().lower()
@@ -68,7 +71,7 @@ def play() -> None:
             print("Entered Invalid Mode. Playing Easy")
             aiMode = "easy"
     
-    playerTurn = True
+    playerTurn = True #Player gets first turn if playing in interactive mode
 
     print("Commands: 'r A1' to reveal, 'f A1' to flag/unflag, 'q' to quit.")
     if ai_enabled:
@@ -85,27 +88,32 @@ def play() -> None:
         print(f"Status: Playing   Mines remaining: {board.flags_remaining()}")
 
 
-        #2
+        #Sourced: DeepSeek AI
+        #if enable interactive mode and it's not the player's turn, AI makes a move
         if ai_enabled and not playerTurn:
-            move = ai.chooseMove(board, aiMode)
-            if move is None:
+            move = ai.chooseMove(board, aiMode) #Set AI's chosen move
+            if move is None: #If AI's move is None, player wins
                 print("AI has no moves left.")
                 print("Status: Victory- you cleared every safe cell")
                 return
+
+            #Get move the coordinate (letter, number) label of AI's move and do move
             label = f"{move.action} {chr(ord('A') + move.col)}{move.row + 1}"
-            hit = ai.doMove(board, move)
-            print(f"AI chose {label}.")
+            hit = ai.doMove(board, move) #True if move reveals a mine; False if else
+            print(f"AI chose {label}.") #Print the AI's chosen cooridinate label
+            #if AI hits a mine, AI loses
             if hit:
                 print()
                 print(board.render(show_mines=True))
                 print("Status: Game Over: Loss - AI uncovered a mine.")
                 return
+            #If board is cleared, AI wins
             if board.is_cleared():
                 print()
                 print(board.render(show_mines=True))
                 print("Status: Victory - AI cleared every safe cell!")
                 return
-            playerTurn = True
+            playerTurn = True #Set to player turn
             continue
 
         
@@ -149,6 +157,7 @@ def play() -> None:
             print("Status: Victory - you cleared every safe cell!")
             return
 
-        #2
+        #Sourced: DeepSeek AI
+        #If the AI interactive mode was selected, set player's turn to False; is AI's turn
         if aiInteractive:
             playerTurn = False
