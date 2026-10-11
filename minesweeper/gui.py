@@ -79,6 +79,7 @@ class MinesweeperGUI:
         self.ai_mode = "easy"
         self.player_turn = True
         self.ai_job = None
+
         #
         self.seconds = 0
         self.timer_job = None  # id of the pending after() callback, if any
@@ -99,7 +100,7 @@ class MinesweeperGUI:
         self.root.geometry(f"{width}x{height}")
         self.root.minsize(width // 2, height // 2)
         
-
+    #2
     def toggleAI(self) -> None:
         self.ai_enabled = self.ai_var.get()
         self.new_game()
@@ -141,15 +142,17 @@ class MinesweeperGUI:
         self.refresh()
         self.player_turn = True
 
+    #probably remove
     def cancelAIJob(self):
             if self.ai_job is not None:
                 self.root.after_cancel(self.ai_job)
                 self.ai_job = None
-
+    #probably remove
     def scheduleAITurn(self, delay_ms: int=400) -> None:
         self.cancelAIJob()
         self.player_turn = False
         self.ai_job = self.root.after(delay_ms, self.aiTurn)
+
 
     # ------------------------------------------------------------------
     # Widget construction
