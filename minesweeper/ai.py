@@ -16,9 +16,10 @@ Description:   Implements the easy, medium, and hard AI modes additions and
                uncovered cell's number, the AI opens all other hidden neighbors.
 
                The hard AI uses the medium AI's logic but adds the 1-2-1 pattern
-               rule. This is when three reveals cells in a row/col show 1-2-1 then
-               it flags the two outer hidden neighbors since it deduces them as
-               mines. It then opens the middle hidden neighbor. When neither hard
+               rule. This is when three revealed cells in a row/col show 1-2-1
+               and the only covered cells touching them are on one side. It
+               flags the covered cells beside the two 1s (they must be mines)
+               and opens the covered cell beside the 2 (it must be safe). When neither hard
                nor medium AI logic applies, pick a random cell to open.
 
 
@@ -27,6 +28,7 @@ Functions:     hiddenNeighbors(board, row, col)   ->[(row, col)]
                revealedNumber(board, row, col)    -> Optional[int]
                easyAI(board)                      -> Optional[Move]
                mediumAI(board, isHardAI=False)          -> Optional[Move]
+               oneTwoOneMove(board)               -> Optional[Move]
                hardAI(board)                      -> Optional[Move]
                chooseMove(board, mode)            -> Optional[Move]
                doMove(board, move)                -> bool
@@ -126,60 +128,83 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
         return None
     return easyAI(board) #fallback (random open)
 
+def oneTwoOneMove(board: Board) -> Optional[Move]:
+    """Find a 1-2-1 pattern and return the move it proves is right.
+
+    Inputs:  board (Board) - the current game board.
+    Outputs: Move to flag one of the two mines, or to open the safe cell, or
+             None if no 1-2-1 pattern on the board gives a new move.
+
+    The pattern: three revealed cells side by side read 1, 2, 1, and the only
+    covered cells touching them are in the row (or column) on one side. The
+    2 needs two mines among the three covered cells beside it. If the cell
+    beside the 2 were a mine, the second mine would sit beside one of the 1s,
+    giving that 1 two mines - impossible. So the cells beside the two 1s are
+    mines and the cell beside the 2 is safe.
+    """
+    # Sourced: Combined (pattern rule from the project spec; Didier Carrillo's
+    # original layout, corrected with Claude AI to check the side cells)
+    # Side by side means along a row (0, 1) or down a column (1, 0).
+    for dr, dc in ((0, 1), (1, 0)):
+        for r in range(board.rows):
+            for c in range(board.cols):
+                line = [(r, c), (r + dr, c + dc), (r + 2 * dr, c + 2 * dc)]
+                numbers = [revealedNumber(board, lr, lc) for lr, lc in line]
+                if numbers != [1, 2, 1]:
+                    continue
+
+                # The covered side can be either side of the line.
+                for sr, sc in ((dc, dr), (-dc, -dr)):
+                    side = [(lr + sr, lc + sc) for lr, lc in line]
+                    if not all(board.in_bounds(*cell) for cell in side):
+                        continue
+                    if not _onlyCoveredOnSide(board, line, sr, sc):
+                        continue
+
+                    outer_a, middle, outer_b = side
+                    # Flag the two mines first, then open the safe middle cell.
+                    for mr, mc in (outer_a, outer_b):
+                        cell = board.grid[mr][mc]
+                        if not cell.is_revealed and not cell.is_flagged:
+                            return Move("flag", mr, mc)
+                    cell = board.grid[middle[0]][middle[1]]
+                    if not cell.is_revealed and not cell.is_flagged:
+                        return Move("open", middle[0], middle[1])
+    return None
+
+
+def _onlyCoveredOnSide(board: Board, line, sr: int, sc: int) -> bool:
+    """True if every covered neighbor of the three line cells is on the given side.
+
+    Inputs:  board (Board), line (three (row, col) cells), sr/sc (int) - the
+             step from the line to the side being checked.
+    Outputs: bool - False if a covered or flagged cell touches the pattern
+             anywhere else, because then the 1-2-1 deduction is not safe.
+    """
+    # Sourced: Claude AI
+    side_cells = set()
+    for lr, lc in line:
+        for step in (-1, 0, 1):
+            # The three cells on the side row next to each line cell.
+            side_cells.add((lr + sr + step * abs(sc), lc + sc + step * abs(sr)))
+    for lr, lc in line:
+        for nr, nc in board.neighbors(lr, lc):
+            if not board.grid[nr][nc].is_revealed and (nr, nc) not in side_cells:
+                return False
+    return True
+
+
 def hardAI(board: Board) ->Optional[Move]:
     move = mediumAI(board, isHardAI=True)
     if move is not None: #if AI found move using mediumAI, just use that
         return move
     #if move is None, mediumAI didn't find valid move so use 1-2-1 rule
-    
-    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
-    for dr, dc in directions:
-        for r in range(board.rows):
-            for c in range(board.cols):
-                mr, mc = r + dr, c + dc
-                er, ec = r + 2 * dr, c + 2 * dc
-                if not (board.in_bounds(mr, mc) and board.in_bounds(er, ec)):
-                    continue
-
-                # if first cell isn't 1 or middle cell isn't 2 or end cell isn't 1 continue
-                if revealedNumber(board, r, c) != 1 or revealedNumber(board, mr, mc) != 2 or revealedNumber(board, er, ec) != 1:
-                    continue
-
-                outer_a = (r - dr, c - dc)
-                outer_b = (er + dr, ec + dc)
-                middleN = (mr - dc * 0, mc + 0) #place holder for hidden middle neighbor
-
-                perpendicular_dr, perpendicular_dc = -dc, dr #coordinate(dr,dc) is shifted 90 degrees
-
-                for sign in (1, -1):
-                    mid_r = mr + sign * perpendicular_dr
-                    mid_c = mc + sign * perpendicular_dc
-
-                    #if any cell generated is not in bounds, continue
-                    if not (board.in_bounds(mid_r, mid_c) and board.in_bounds(*outer_a) and board.in_bounds(*outer_b)):
-                        continue
-
-                    #if cell is revealed or flagged, continue
-                    if board.grid[mid_r][mid_c].is_revealed is True or board.grid[mid_r][mid_c].is_flagged is True:
-                        continue
-
-                    #checks that outer_a is hidden and unflagged so that actions can be taken on it
-                    a_ok = (not board.grid[outer_a[0]][outer_a[1]].is_revealed and not board.grid[outer_a[0]][outer_a[1]].is_flagged)
-                    #checks that outer_b is hidden and unflagged so that actions can be taken on it
-                    b_ok = (not board.grid[outer_b[0]][outer_b[1]].is_revealed and not board.grid[outer_b[0]][outer_b[1]].is_flagged)
-                    if not (a_ok and b_ok):
-                        continue
-
-                    if not board.grid[outer_a[0]][outer_a[1]].is_flagged:
-                        return Move("flag", outer_a[0], outer_a[1])
-                    if not board.grid[outer_b[0]][outer_b[1]].is_flagged:
-                        return Move("flag", outer_b[0], outer_b[1])
-                    return Move("open", mid_r, mid_c)
-
-    
+    move = oneTwoOneMove(board)
+    if move is not None:
+        return move
+    #no rule applies, so fall back to a random open
     return easyAI(board)
 
-                    
 
 def chooseMove(board: Board, mode: str) -> Optional[Move]:
     mode = mode.lower()
