@@ -96,9 +96,9 @@ Inputs: board(Board)- the board object being played on.
         row(int)- row of coordinate
         col(int)- column of coordinate
 Outputs: Number of adjacent mines
-Sourced: DeepSeek AI
 '''
 def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
+    #Sourced: DeepSeek AI
     #if coordinate provided is not in the board, return None, otherwise save it in variable cell
     if not board.in_bounds(row, col):
         return None
@@ -108,6 +108,8 @@ def revealedNumber(board: Board, row: int, col: int) -> Optional[int]:
     if cell.is_revealed and not cell.is_mine and cell.adjacent_mines > 0:
         return cell.adjacent_mines
     return None #Return None if any condition above failed
+
+    
 
 '''
 Program computer to solve minesweeper game by uncovering cells at random.
@@ -131,12 +133,26 @@ def easyAI(board: Board) -> Optional[Move]:
     row, col = board.rng.choice(candidates)
     return Move("open", row, col) #Return Move(always "open") with the picked coordinates
 
+'''
+Program computer to play minesweeper using 2 rules.
+    1. If a revealed cell's amount of hidden neighbors matches it's number, flag it's hidden
+        neighbors
+    2. Then if a revealed cell's amount of flagged neighbors matches it's number, open it's 
+        unflagged and hidden neighbors.
+    Otherwise call easyAI and open a random cell.
+Inputs: board(Board)- the board object being played on.
+        isHardAI- defaults to False; Only for when hardAI calls mediumAI
+Outputs: AI's Move("open"/"flag" and selected cell); Calls easyAI when neither rule applies
+         None when isHardAI=True (to stop mediumAI from calling easyAI)
+'''
 def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
+    #Sourced: DeepSeek AI
+    #Go through every cell and check if it's covered or has any adjacent mines
     for r in range(board.rows):
         for c in range(board.cols):
             cell = board.grid[r][c]
             if not cell.is_revealed or cell.adjacent_mines == 0:
-                continue
+                continue #When is not revealed or has no adjacent mines, continue to rule 2
 
             hidden = hiddenNeighbors(board, r, c)
             # Count flagged cells as hidden too, so an already-flagged mine
@@ -146,20 +162,24 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
                 nr, nc = hidden[0]
                 return Move("flag", nr, nc)
 
-    #rule 2
+    #rule 2; Sourced: DeepSeek AI
+    #Go through every cell and check if it is revealed or has any adjacent mines
     for r in range(board.rows):
         for c in range(board.cols):
             cell = board.grid[r][c]
             if not cell.is_revealed or cell.adjacent_mines == 0:
-                continue
+                continue #When is not revealed and has no adjacent mines, rule 2 does not apply
+
             flagged = flaggedNeighbors(board, r, c)
             hidden = hiddenNeighbors(board, r, c)
             if hidden and len(flagged) == cell.adjacent_mines:
                 nr, nc = hidden[0]
-                return Move("open", nr, nc)
+                #Open hidden neighbors when number of flagged neighbors equals number of adjacent mines
+                return Move("open", nr, nc)  
 
+    #When neither rule applies, check if mediumAI was called by hardAI
     if isHardAI is True:
-        return None
+        return None #Return None if mediumAI was called by hardAI(to not call easyAI)
     return easyAI(board) #fallback (random open)
 
 def oneTwoOneMove(board: Board) -> Optional[Move]:
