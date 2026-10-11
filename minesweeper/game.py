@@ -24,22 +24,22 @@ Created:       2026-09-14
 
 from . import config
 from .board import Board, parse_coordinate
-from sklearn import tree
+from .boardsize import BoardSize
 from . import ai
 
 def prompt_mine_count() -> int:
     """Ask the player how many mines to use, repeating until the answer is valid.
 
     Inputs:  Keyboard input (whole number).
-    Outputs: int - mine count between config.MIN_MINES and config.MAX_MINES.
+    Outputs: int - mine count between BoardSize.SMALL.min_mines and BoardSize.SMALL.max_mines.
     """
     # Sourced: Claude AI
     # Loop until the input is a whole number inside the allowed range.
     while True:
-        raw = input(f"Number of mines ({config.MIN_MINES}-{config.MAX_MINES}): ").strip()
-        if raw.isdigit() and config.MIN_MINES <= int(raw) <= config.MAX_MINES:
+        raw = input(f"Number of mines ({BoardSize.SMALL.min_mines}-{BoardSize.SMALL.max_mines}): ").strip()
+        if raw.isdigit() and BoardSize.SMALL.min_mines <= int(raw) <= BoardSize.SMALL.max_mines:
             return int(raw)
-        print(f"Please enter a whole number from {config.MIN_MINES} to {config.MAX_MINES}.")
+        print(f"Please enter a whole number from {BoardSize.SMALL.min_mines} to {BoardSize.SMALL.max_mines}.")
 
 
 def play() -> None:
@@ -53,7 +53,8 @@ def play() -> None:
 
     # Sourced: Claude AI
     # --- Setup: create a covered, unflagged board (mines placed on first reveal) ---
-    board = Board(prompt_mine_count())
+    # Terminal play always uses the classic 10x10 board.
+    board = Board(BoardSize.SMALL, prompt_mine_count())
 
     #2
     aiInteractive = input("Enable AI Interactive Mode? (Y or N): ")
@@ -123,7 +124,7 @@ def play() -> None:
 
         # Convert 'A1'-style text to grid indices; report bad coordinates.
         try:
-            row, col = parse_coordinate(parts[1])
+            row, col = parse_coordinate(parts[1], board)
         except ValueError as exc:
             print(exc)
             continue

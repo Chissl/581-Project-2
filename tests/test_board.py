@@ -28,6 +28,9 @@ import unittest
 
 from minesweeper import config
 from minesweeper.board import Board, format_coordinate, parse_coordinate
+from minesweeper.boardsize import BoardSize
+
+SMALL = BoardSize.SMALL
 
 
 # Sourced: Claude AI
@@ -36,18 +39,18 @@ class TestCoordinates(unittest.TestCase):
 
     def test_parse_corners(self):
         # Top-left and bottom-right corners; lowercase input is accepted.
-        self.assertEqual(parse_coordinate("A1"), (0, 0))
-        self.assertEqual(parse_coordinate("j10"), (9, 9))
+        self.assertEqual(parse_coordinate("A1", Board(SMALL)), (0, 0))
+        self.assertEqual(parse_coordinate("j10", Board(SMALL)), (9, 9))
 
     def test_round_trip(self):
         # Parsing then formatting should return the original label.
-        self.assertEqual(format_coordinate(*parse_coordinate("E7")), "E7")
+        self.assertEqual(format_coordinate(*parse_coordinate("E7", Board(SMALL))), "E7")
 
     def test_invalid(self):
         # Empty, missing row, column past J, row 0, row 11, reversed, no digits.
         for bad in ("", "A", "K1", "A0", "A11", "1A", "AA"):
             with self.assertRaises(ValueError):
-                parse_coordinate(bad)
+                parse_coordinate(bad, Board(SMALL))
 
 
 # Sourced: Claude AI
@@ -57,7 +60,7 @@ class TestBoardSetup(unittest.TestCase):
     def test_dimensions_and_initial_state(self):
         # Board must be 10x10 with every cell covered, unflagged, and mine-free
         # (mines are not placed until the first reveal).
-        board = Board(10)
+        board = Board(SMALL, 10)
         self.assertEqual(len(board.grid), 10)
         self.assertTrue(all(len(row) == 10 for row in board.grid))
         for row in board.grid:
@@ -71,14 +74,14 @@ class TestBoardSetup(unittest.TestCase):
         # Just outside the range is rejected; the exact limits are accepted.
         for bad in (9, 21):
             with self.assertRaises(ValueError):
-                Board(bad)
-        Board(config.MIN_MINES)
-        Board(config.MAX_MINES)
+                Board(SMALL, bad)
+        Board(SMALL, SMALL.min_mines)
+        Board(SMALL, SMALL.max_mines)
 
     def test_first_click_is_safe(self):
         # Try 50 different seeds with the maximum mine count, clicking a corner.
         for seed in range(50):
-            board = Board(20, rng=random.Random(seed))
+            board = Board(SMALL, 20, rng=random.Random(seed))
             board.place_mines(0, 0)
             # Exactly the requested number of mines was placed.
             self.assertEqual(sum(c.is_mine for row in board.grid for c in row), 20)
@@ -92,7 +95,7 @@ class TestBoardSetup(unittest.TestCase):
     def test_first_reveal_never_hits_mine(self):
         # Revealing on a fresh board must never report a mine hit.
         for seed in range(50):
-            board = Board(20, rng=random.Random(seed))
+            board = Board(SMALL, 20, rng=random.Random(seed))
             self.assertFalse(board.reveal(5, 5))
 
 

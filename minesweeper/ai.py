@@ -48,6 +48,7 @@ Created:       2026-10-10 ***Created earlier, but moved to this new file.
 """
 
 from .board import Board
+from .boardsize import BoardSize
 from typing import Optional
 
 #Holds the AI's chosen action and coordinate. Passes through
@@ -89,7 +90,7 @@ def easyAI(board: Board) -> Optional[Move]:
             if coveredCell.is_revealed is False and coveredCell.is_flagged is False:
                 candidates.append((r, c)) #"yield" source: deepseek; maybe replace with return
 
-    if candidates is False:
+    if not candidates:
         return None
     row, col = board.rng.choice(candidates)
     return Move("open", row, col)
@@ -102,7 +103,10 @@ def mediumAI(board: Board, isHardAI=False) ->Optional[Move]:
                 continue
 
             hidden = hiddenNeighbors(board, r, c)
-            if hidden and len(hidden) == cell.adjacent_mines:
+            # Count flagged cells as hidden too, so an already-flagged mine
+            # doesn't make the AI flag a safe neighbor by mistake.
+            flagged = flaggedNeighbors(board, r, c)
+            if hidden and len(hidden) + len(flagged) == cell.adjacent_mines:
                 nr, nc = hidden[0]
                 return Move("flag", nr, nc)
 
@@ -198,8 +202,8 @@ def doMove(board: Board, move: Optional[Move]) -> bool:
         return board.reveal(move.row, move.col)
     raise ValueError(f"Unknown move action: {move.action!r}")
 
-def autoSolve(mineCount: int, mode: str, verbose: bool = True) -> bool:
-    board = Board(mineCount)
+def autoSolve(mineCount: int, mode: str, verbose: bool = True, boardSize: BoardSize = BoardSize.SMALL) -> bool:
+    board = Board(boardSize, mineCount)
 
     first = easyAI(board)
     board.reveal(first.row, first.col)

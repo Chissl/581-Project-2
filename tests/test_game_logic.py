@@ -34,6 +34,7 @@ import unittest
 
 from minesweeper import config
 from minesweeper.board import Board
+from minesweeper.boardsize import BoardSize
 
 
 # Sourced: Claude AI
@@ -43,7 +44,7 @@ def make_board(seed: int, mines: int = 10) -> Board:
     Inputs:  seed (int) - random seed; mines (int) - mine count 10-20.
     Outputs: Board - a fresh, fully covered board.
     """
-    return Board(mines, rng=random.Random(seed))
+    return Board(BoardSize.SMALL, mines, rng=random.Random(seed))
 
 
 # Sourced: Claude AI
@@ -249,8 +250,8 @@ class TestRobustness(unittest.TestCase):
         # The text board is one header line plus one line per row.
         board = make_board(13)
         lines = board.render().splitlines()
-        self.assertEqual(len(lines), config.ROWS + 1)
-        for label in config.COL_LABELS:
+        self.assertEqual(len(lines), BoardSize.SMALL.rows + 1)
+        for label in config.COL_LABELS[: board.cols]:
             self.assertIn(label, lines[0])
 
     def test_random_play_never_breaks_invariants(self):
@@ -259,7 +260,7 @@ class TestRobustness(unittest.TestCase):
         # board must still satisfy its invariants and must never raise.
         rng = random.Random(1234)
         for seed in range(40):
-            board = make_board(seed, mines=rng.randint(config.MIN_MINES, config.MAX_MINES))
+            board = make_board(seed, mines=rng.randint(BoardSize.SMALL.min_mines, BoardSize.SMALL.max_mines))
             for _ in range(200):
                 # Occasionally feed an off-board coordinate to the board.
                 if rng.random() < 0.1:

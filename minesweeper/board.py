@@ -7,7 +7,7 @@ Description:   Holds the board state for Minesweeper: the 10x10 grid of cells,
                board as text. Also converts between player coordinates ("A1")
                and zero-based grid indices.
 
-Functions:     parse_coordinate(text)       -> (row, col)
+Functions:     parse_coordinate(text, board) -> (row, col)
                format_coordinate(row, col)  -> str
 Classes:       Board
                  __init__(mine_count, rng=None)
@@ -41,10 +41,11 @@ import random
 from typing import Iterator, Optional
 
 from . import config
+from .boardsize import BoardSize
 from .cell import Cell
 
 
-def parse_coordinate(text: str) -> tuple[int, int]:
+def parse_coordinate(text: str, board: "Board") -> tuple[int, int]:
     """Convert a label like 'A1' or 'j10' into zero-based (row, col).
 
     Inputs:  text (str) - column letter A-J followed by row number 1-10;
@@ -66,8 +67,11 @@ def parse_coordinate(text: str) -> tuple[int, int]:
     # Convert from 1-based display numbers to 0-based list indices.
     row = int(row_part) - 1
     col = config.COL_LABELS.index(col_char)
-    if not (0 <= row < config.ROWS):
-        raise ValueError(f"Row out of range (1-{config.ROWS}): {text!r}")
+    if not (0 <= row < board.rows):
+        raise ValueError(f"Row out of range (1-{board.rows}): {text!r}")
+    # COL_LABELS covers A-Z, so also reject letters past this board's last column.
+    if not (0 <= col < board.cols):
+        raise ValueError(f"Column out of range (A-{config.COL_LABELS[board.cols - 1]}): {text!r}")
     return row, col
 
 
@@ -84,7 +88,7 @@ def format_coordinate(row: int, col: int) -> str:
 class Board:
     """The Minesweeper grid and all operations that change or read it."""
 
-    def __init__(self, mine_count: int, rng: Optional[random.Random] = None):
+    def __init__(self, board_size: BoardSize, mine_count: Optional[int] = None, rng: Optional[random.Random] = None):
         """Create an empty, fully covered board.
 
         Inputs:  mine_count (int) - number of mines, must be 10-20.
@@ -94,13 +98,17 @@ class Board:
         Raises:  ValueError if mine_count is outside the allowed range.
         """
         # Sourced: Claude AI
-        # Enforce the required 10-20 mine range.
-        if not (config.MIN_MINES <= mine_count <= config.MAX_MINES):
+        # Enforce min/max range.
+        if mine_count is None:
+            mine_count = board_size.min_mines
+
+        if not (board_size.min_mines <= mine_count <= board_size.max_mines):
             raise ValueError(
-                f"Mine count must be between {config.MIN_MINES} and {config.MAX_MINES}"
+                f"Mine count must be between {board_size.min_mines} and {board_size.max_mines}"
             )
-        self.rows = config.ROWS
-        self.cols = config.COLS
+        self.board_size = board_size
+        self.rows = board_size.rows
+        self.cols = board_size.cols
         self.mine_count = mine_count
         self.rng = rng or random.Random()
 
