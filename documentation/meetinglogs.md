@@ -1,5 +1,3 @@
-Here are the meeting info:
-
 Meeting 4 - Friday, September 25, 2026
 
 Attendees: Full team
