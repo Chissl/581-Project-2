@@ -310,7 +310,7 @@ class MinesweeperGUI:
         listbox.bind("<<ListboxSelect>>", self._on_board_size_select)
         self.board_size_listbox = listbox
 
-        #2
+        #Checkbox to turn on/off AI opponent
         self.ai_var = tk.BooleanVar(value=False)
         tk.Checkbutton(
             bar, 
@@ -322,7 +322,8 @@ class MinesweeperGUI:
             highlightbackground=PANEL_COLOR #2,
         ).pack(side="left", padx=(12, 4))
 
-        self.mode_var = tk.StringVar(value="easy") #self.ai_mode=
+        #Default AI mode to easy; Create dropdown menu with "easy", "medium", and "hard" options
+        self.mode_var = tk.StringVar(value="easy")
         tk.OptionMenu(bar, self.mode_var, "easy", "medium", "hard").pack(side="left")
 
         # Let the AI play the whole board by itself in the chosen mode.
