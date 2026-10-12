@@ -155,11 +155,17 @@ palette.
 
 ## Project 2 Team
 Will Godderz
+
 Jaydee Brown
+
 Zackary Rhodes
+
 Didier Carrillo
+
 Aidan Bergeman
+
 Ethan Gao
+
 Lea Sulthana Syed
 
 
