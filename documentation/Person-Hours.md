@@ -22,12 +22,12 @@ This document tracks actual time spent by each team member on Project 2 tasks, m
 | Team Member | Role | Planned Hours (UCP) | Actual Hours Spent | Variance (+/-) |
 |---|---|:---:|:---:|:---:|
 | **Will Godderz** | Project Manager | 20.0 | 6.0 | -14.0 |
-| **Jaydee Brown** | Frontend Developer | 22.0 | 7.0 | -15.0 |
-| **Lea Syed** | Quality Testing (UI & Input) | 5.0 | 20.0 | +15.0 |
-| **Aidan Bergeman** | Version Control & Code Quality | 4.0 | 18.0 | +14.0 |
+| **Jaydee Brown** | Frontend Developer | 22.0 | 5.0 | -17.0 |
+| **Lea Syed** | Quality Testing (UI & Input) | 20.0 | 5.0 | -15.0 |
+| **Aidan Bergeman** | Version Control & Code Quality | 18.0 | 4.0 | -14.0 |
 | **Zackary Rhodes** | Backend / Documentation | 20.0 | 4.0 | -16.0 |
 | **Ethan Gao** | Backend Developer | 20.0 | 5.0 | -15.0 |
-| **Didier Carrillo** | Technical Lead | 20.0 | 7.0 | -13.0 |
+| **Didier Carrillo** | Technical Lead | 20.0 | 17.0 | -3.0 |
 | **Total** | | **111.0** | **67.0** | **-44.0** |
 
 ---
@@ -46,7 +46,7 @@ This document tracks actual time spent by each team member on Project 2 tasks, m
 
 ### Jaydee Brown (Frontend Developer)
 - **Planned Total:** 22.0 hrs
-- **Actual Total:** 7.0 hrs
+- **Actual Total:** 5.0 hrs
 
 | Date | Task Description | Activity Type | Hours Spent | Notes / Pull Requests |
 |---|---|---|:---:|---|
@@ -96,8 +96,8 @@ This document tracks actual time spent by each team member on Project 2 tasks, m
 
 ### Didier Carrillo (Technical Lead)
 - **Planned Total:** 20.0 hrs
-- **Actual Total:** 7.0 hrs
+- **Actual Total:** 17.0 hrs
 
 | Date | Task Description | Activity Type | Hours Spent | Notes / Pull Requests |
 |---|---|---|:---:|---|
-| 2026-10-11 | AI architecture design & integration | Coding / Meetings | 7.0 | Technical oversight |
+| 2026-10-11 | AI architecture design & integration | Coding / Meetings | 17.0 | Technical oversight |
