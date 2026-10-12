@@ -589,7 +589,8 @@ class MinesweeperGUI:
         # Sourced: Claude AI
         if self.game_over:
             return
-        #2
+        #Sourced: DeepSeek AI
+        #If autoSolving is True or AI is enabled but it's not the player's turn, exit out function call    
         if self.auto_solving or (self.ai_enabled and not self.player_turn):
             return
         self.board.toggle_flag(row, col)
