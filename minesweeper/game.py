@@ -20,7 +20,7 @@ External Sources:
                Also Generated with the assistance of DeepSeek(High-Flyer,
                model DeepSeek-V4.1-Flash).
 
-Author:        Caleb Hite & Kai Barnhart
+Author:        Caleb Hite & Kai Barnhart & Didier Carrillo
 Created:       2026-09-14
 ================================================================================
 """
