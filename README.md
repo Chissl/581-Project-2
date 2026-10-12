@@ -153,20 +153,13 @@ The flood-fill reveal uses the standard iterative depth-first search technique (
 algorithm; no specific source copied). The cell number colors follow the classic Minesweeper
 palette.
 
-## Project 1 Team
-
-| Member | Role / Task |
-| --- | --- |
-| Bradley Brown | Scrum Master |
-| Caleb Hite | Software Engineer — Game setup |
-| Ben Haney | Software Engineer — Game conclusion |
-| Will Calhoun | Software Engineer — Player interface |
-| Charlie Doherty | Software Engineer — Gameplay function |
-| Kai Barnhart | Software Engineer — Flag setting |
-
-Project 2 Team
-
-| Member | Role / Task |
-| --- | --- |
+## Project 2 Team
+Will Godderz
+Jaydee Brown
+Zackary Rhodes
+Didier Carrillo
+Aidan Bergeman
+Ethan Gao
+Lea Sulthana Syed
 
 
