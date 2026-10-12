@@ -50,7 +50,7 @@ This document tracks actual time spent by each team member on Project 2 tasks, m
 
 | Date | Task Description | Activity Type | Hours Spent | Notes / Pull Requests |
 |---|---|---|:---:|---|
-| 2026-10-11 | GUI controls for board sizes & AI | Coding | 7.0 | Integrated size selector |
+| 2026-10-11 | GUI controls for board sizes & AI | Coding | 5.0 | Integrated size selector |
 
 ---
 
