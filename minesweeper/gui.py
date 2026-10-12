@@ -153,13 +153,23 @@ class MinesweeperGUI:
         self.refresh()
         self.player_turn = True
 
-    # Cancel any AI move waiting on a timer (opponent turn or auto-solve step).
+    
     def cancelAIJob(self):
+            """Cancel any AI move waiting on a timer (opponent turn or auto-solve step).
+            
+                Inputs:  None (uses self.ai_job value).
+                Outputs: None 
+            """
             if self.ai_job is not None:
                 self.root.after_cancel(self.ai_job)
                 self.ai_job = None
-    # Give the AI opponent its turn after a short pause so the player sees it.
+    
     def scheduleAITurn(self, delay_ms: int=400) -> None:
+        """Give the AI opponent its turn after a short pause so the player sees it.
+                    
+            Inputs: delay_ms(int)- default to 400ms
+            Outputs: None 
+        """
         self.cancelAIJob()
         self.player_turn = False
         self.ai_job = self.root.after(delay_ms, self.aiTurn)
