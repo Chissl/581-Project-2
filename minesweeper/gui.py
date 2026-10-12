@@ -21,6 +21,8 @@ External Sources:
                Claude Opus 5) via Claude Code. Uses Python's standard-library
                tkinter module (https://docs.python.org/3/library/tkinter.html).
                The number colors follow the classic Minesweeper palette.
+               Also Generated with the assistance of DeepSeek(High-Flyer,model 
+               DeepSeek-V4.1-Flash).
                Reviewed by the author.
 
 

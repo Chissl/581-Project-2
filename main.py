@@ -14,7 +14,10 @@ Outputs:       A game window, or terminal output in text mode
 
 External Sources:
                Generated with the assistance of Claude (Anthropic, model
-               Claude Opus 5) via Claude Code. Reviewed by the author.
+               Claude Opus 5) via Claude Code.
+               Also Generated with the assistance of DeepSeek(High-Flyer,
+               model DeepSeek-V4.1-Flash).
+               Reviewed by the author.
 
 ================================================================================
 """

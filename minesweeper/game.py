@@ -17,6 +17,9 @@ External Sources:
                Generated with the assistance of Claude (Anthropic, model
                Claude Opus 5) via Claude Code. Reviewed by the author.
 
+               Also Generated with the assistance of DeepSeek(High-Flyer,
+               model DeepSeek-V4.1-Flash).
+
 Author:        Caleb Hite & Kai Barnhart
 Created:       2026-09-14
 ================================================================================
@@ -56,7 +59,6 @@ def play() -> None:
     # Terminal play always uses the classic 10x10 board.
     board = Board(BoardSize.SMALL, prompt_mine_count())
 
-    #2
     # Default to a solo game so answering "N" still leaves these defined.
     ai_enabled = False
     aiMode = "easy"
