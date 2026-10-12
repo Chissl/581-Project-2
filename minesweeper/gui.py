@@ -116,38 +116,40 @@ class MinesweeperGUI:
         self.ai_enabled = self.ai_var.get() #Set ai_enabled to value in ai_var
         self.new_game() #Reset game when toggle the AI on/off
 
+    """The AI perform's a move
+        
+        Inputs:  None
+        Outputs: None
+    """
     def aiTurn(self):
-        #self.ai_job = None
+        #If game_over is True or ai_enabled is False, end Turn
         if self.game_over or not self.ai_enabled:
             return
 
+        #Get move from AI; use the current board and AI mode as arguments
         move = ai.chooseMove(self.board, self.ai_mode)
-        #if self.ai_mode == "easy":
-            #move = ai.easyAI(self.board) #***maybe change for later (move = ai.choose_move(self.mode, self.ai_mode))
-
+        #Sourced: DeepSeek AI
+        #If move is None, check if board was cleared, then end turn
         if move is None:
             self.finish(won= self.board.is_cleared())
             return
 
-
         #ai.doMove(self.board, move)
+        #Sourced: DeepSeek AI
+        #If the AI uncovered a mine set won to False, end turn
         if self.board.reveal(move.row, move.col) if move.action == "open" else False:
             self.finish(won=False)
             return
-        '''
-        if self.board.reveal(move.row, move.col):
-                if move.action == "open": #else False:
-                    self.finish(won= False)
-                    return
-        ''' 
-        
+
+        #If AI's action was "flag", flag its chosen coordinate
         if move.action == "flag":
             self.board.toggle_flag(move.row, move.col)
-
+        #If board was cleared, set won to True, end turn
         if self.board.is_cleared():
             self.finish(won= True)
             return
 
+        #Update board; Set player turn to True
         self.refresh()
         self.player_turn = True
 
