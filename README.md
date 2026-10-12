@@ -1,7 +1,7 @@
-# Minesweeper — EECS 581 Project 1
+# Minesweeper — EECS 581 Project 2
 
-A single-player Minesweeper game on a 10x10 grid (columns **A–J**, rows **1–10**) with a
-user-selected mine count of 10–20. Ships with a clickable graphical window (Tkinter) and a
+A single-player Minesweeper game with preset grid sizes: Small (10\*10), Medium (15\*15), Large (25*25) with a
+user-selected mine count. Ships with a clickable graphical window (Tkinter) and a
 terminal version.
 
 **Course:** EECS 581 Software Engineering II, Fall 2026 — Professor Hossein Saiedian
@@ -153,7 +153,7 @@ The flood-fill reveal uses the standard iterative depth-first search technique (
 algorithm; no specific source copied). The cell number colors follow the classic Minesweeper
 palette.
 
-## Team
+## Project 1 Team
 
 | Member | Role / Task |
 | --- | --- |
@@ -163,3 +163,10 @@ palette.
 | Will Calhoun | Software Engineer — Player interface |
 | Charlie Doherty | Software Engineer — Gameplay function |
 | Kai Barnhart | Software Engineer — Flag setting |
+
+Project 2 Team
+
+| Member | Role / Task |
+| --- | --- |
+
+
