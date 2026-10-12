@@ -28,7 +28,7 @@ This document tracks actual time spent by each team member on Project 2 tasks, m
 | **Zackary Rhodes** | Backend / Documentation | 20.0 | 4.0 | -16.0 |
 | **Ethan Gao** | Backend Developer | 20.0 | 5.0 | -15.0 |
 | **Didier Carrillo** | Technical Lead | 20.0 | 17.0 | -3.0 |
-| **Total** | | **111.0** | **67.0** | **-44.0** |
+| **Total** | | **140.0** | **46.0** | **-94.0** |
 
 ---
 
