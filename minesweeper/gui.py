@@ -482,14 +482,12 @@ class MinesweeperGUI:
         self.status_label.config(text="Playing", fg="#212121")
         self.timer_label.config(text="Time: 0")
 
-        #2
-        #self.ai_mode = self.mode_var.get() #if hasattr; is basically setting default
-        #self.ai_enabled = self.ai_var
-        #self.player_turn = True
+        #Sourced: DeepSeekAI
+        #Set AI mode to value in mode_var if has a value, otherwise default to easy
         self.ai_mode = self.mode_var.get() if hasattr(self, "mode_var") else "easy"
+        #set ai_enabled to value in self.ai_var
         self.ai_enabled = getattr(self, "ai_var", tk.BooleanVar(value=False)).get()
-        self.player_turn = True
-        #2
+        self.player_turn = True #Player gets the first turn
 
         if (redraw_grid):
             self._build_grid()
